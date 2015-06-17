@@ -81,6 +81,17 @@ namespace Edgecastle.Data.Neo4j
 		}
 
 		/// <summary>
+		/// The name used to identify this provider. 
+		/// </summary>
+		public string AuthProviderName
+		{
+			get
+			{
+				return Settings["AuthProviderName"] ?? "IdentityServer3";
+			}
+		}
+
+		/// <summary>
 		/// Global singleton for accessing common graph configuration settings
 		/// </summary>
 		public static Configuration Global
