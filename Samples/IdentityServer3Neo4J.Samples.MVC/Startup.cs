@@ -6,6 +6,8 @@ using Thinktecture.IdentityServer.Core.Configuration;
 using System.Security.Cryptography.X509Certificates;
 using Edgecastle.IdentityServer3.Neo4j;
 using Microsoft.Owin.Security.OpenIdConnect;
+using Thinktecture.IdentityServer.Core.Logging;
+using Microsoft.Owin.Security.Cookies;
 
 [assembly: OwinStartup(typeof(IdentityServer3Neo4J.Samples.MVC.Startup))]
 
@@ -23,25 +25,28 @@ namespace IdentityServer3Neo4J.Samples.MVC
 					SigningCertificate = LoadCertificate(),
 
 					// Reference the Neo4j version of the services factory
-					Factory = Neo4jServiceFactory.Create(),
-
-					// For use on VS2015 RC (which doesn't support SSL on IIS Express)
-					RequireSsl = false,
+					Factory = Neo4jServiceFactory.Create()					
 				});
+			});
+
+			app.UseCookieAuthentication(new CookieAuthenticationOptions
+			{
+				AuthenticationType = "Cookies"
 			});
 
 			app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions
 			{
-				Authority = "http://localhost:58065/identity",
+				Authority = "https://localhost:44300/identity",
 				ClientId = "mvcsample",
-				RedirectUri = "http://localhost:58065/",
+				RedirectUri = "https://localhost:44300/",
 				ResponseType = "id_token",
 
-				SignInAsAuthenticationType = "Cookies",
+				SignInAsAuthenticationType = "Cookies"
+			});
 
-				// Disable RequiresNonce as not implemented yet
-				ProtocolValidator = new Microsoft.IdentityModel.Protocols.OpenIdConnectProtocolValidator { RequireNonce = false }
-            });
+			// Use System.Diagnostics.Trace listener (output window)
+			LogProvider.SetCurrentLogProvider(new DiagnosticsTraceLogProvider());
+			
         }
 
 		/// <summary>

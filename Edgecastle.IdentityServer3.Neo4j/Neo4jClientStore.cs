@@ -30,7 +30,8 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
 			var results = await query.ResultsAsync;
 
-			return results.FirstOrDefault();
+			var client = results.FirstOrDefault();
+			return client;
 		}
 	}
 }
