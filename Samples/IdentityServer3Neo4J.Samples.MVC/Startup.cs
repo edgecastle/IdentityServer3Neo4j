@@ -8,6 +8,10 @@ using Edgecastle.IdentityServer3.Neo4j;
 using Microsoft.Owin.Security.OpenIdConnect;
 using Thinktecture.IdentityServer.Core.Logging;
 using Microsoft.Owin.Security.Cookies;
+using Thinktecture.IdentityServer.Core;
+using System.Web.Helpers;
+using System.IdentityModel.Tokens;
+using System.Collections.Generic;
 
 [assembly: OwinStartup(typeof(IdentityServer3Neo4J.Samples.MVC.Startup))]
 
@@ -43,6 +47,9 @@ namespace IdentityServer3Neo4J.Samples.MVC
 
 				SignInAsAuthenticationType = "Cookies"
 			});
+
+			AntiForgeryConfig.UniqueClaimTypeIdentifier = Constants.ClaimTypes.Subject;
+			JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
 
 			// Use System.Diagnostics.Trace listener (output window)
 			LogProvider.SetCurrentLogProvider(new DiagnosticsTraceLogProvider());

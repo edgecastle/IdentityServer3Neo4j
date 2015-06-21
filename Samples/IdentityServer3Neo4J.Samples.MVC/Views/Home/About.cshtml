@@ -1,7 +1,11 @@
 ﻿@{
-    ViewBag.Title = "About";
+    ViewBag.Title = "Authorization Successful";
+    var principal = User as System.Security.Claims.ClaimsPrincipal;
 }
 <h2>@ViewBag.Title.</h2>
-<h3>@ViewBag.Message</h3>
+<h3>You have successfully authenticated and authorized this application to access data and services on your behalf.</h3>
 
-<p>Use this area to provide additional information.</p>
+@foreach(System.Security.Claims.Claim claim in principal.Claims)
+{
+    <p><b>@claim.Type</b><br />@claim.Value</p>
+}

@@ -107,7 +107,7 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 
 					RedirectUris = new List<string>
 					{
-						"http://localhost:58065/"
+						"https://localhost:44300/"
 					}
 				};
 

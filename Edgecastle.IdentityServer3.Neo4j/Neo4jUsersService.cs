@@ -88,10 +88,28 @@ namespace Edgecastle.IdentityServer3.Neo4j
 		/// <param name="password"></param>
 		/// <param name="message"></param>
 		/// <returns></returns>
-		public Task<AuthenticateResult> AuthenticateLocalAsync(string username, string password, SignInMessage message)
+		public async Task<AuthenticateResult> AuthenticateLocalAsync(string username, string password, SignInMessage message)
 		{
-			return Task.FromResult<AuthenticateResult>(new AuthenticateResult(username, username));
-		}
+			// TODO: Secure passwords
+			var query = DB.Cypher
+							.Match("(u:User {Username:{username}, Password:{password}})")
+							.WithParams(new
+							{
+								username = username,
+								password = password
+							})
+							.Return(u => u.As<Models.User>());
+
+			var results = await query.ResultsAsync;
+
+			if(!results.Any())
+			{
+				// Couldn't find user with that username and/or password
+				return new AuthenticateResult("Authentication failed.");
+			}
+
+			return new AuthenticateResult(results.Single().Subject, username);
+        }
 
 		/// <summary>
 		/// 
