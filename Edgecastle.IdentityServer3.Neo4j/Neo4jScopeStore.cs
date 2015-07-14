@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Edgecastle.Data.Neo4j;
+using Neo4jClient;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,18 +15,30 @@ namespace Edgecastle.IdentityServer3.Neo4j
 	/// </summary>
 	public class Neo4jScopeStore : IScopeStore
 	{
+		private GraphClient DB = Neo4jProvider.GetClient();
+
 		/// <summary>
 		/// Finds scopes by their names
 		/// </summary>
 		/// <param name="scopeNames">The names of the scopes</param>
 		/// <returns>A collection of <see cref="Scope"/> objects appropriate to the names passed in.</returns>
-		public Task<IEnumerable<Scope>> FindScopesAsync(IEnumerable<string> scopeNames)
+		public async Task<IEnumerable<Scope>> FindScopesAsync(IEnumerable<string> scopeNames)
 		{
-			var scopes = from s in StandardScopes.All
-						 where scopeNames.ToList().Contains(s.Name)
-						 select s;
+			var scopes = new List<Scope>();
 
-			return Task.FromResult<IEnumerable<Scope>>(scopes.ToList());
+			var query = DB.Cypher
+							.Match("(s:Scope)")
+							.Return(s => s.As<Scope>());
+
+			var results = await query.ResultsAsync;
+
+			if(results.Count() != 0)
+			{
+				scopes.AddRange(results);
+			}
+			scopes.AddRange(StandardScopes.All);
+
+			return scopes.Where(s => scopeNames.ToList().Contains(s.Name));
 		}
 
 		/// <summary>

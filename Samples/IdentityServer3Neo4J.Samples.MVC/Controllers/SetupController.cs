@@ -35,7 +35,7 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 				{
 					Username = "bob",
 					Password = "secret",
-					Subject = "88421113",
+					Id = "88421113",
 				};
 				await DB.Cypher.Create("(u:User {newUser})")
 						.WithParam("newUser", newUser)

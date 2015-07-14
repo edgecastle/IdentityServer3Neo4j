@@ -85,7 +85,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 		/// <summary>
 		/// Creates a <see cref="ClaimsPrincipal"/> from a subject identifier (usually the name or username)
 		/// </summary>
-		/// <param name="subjectId">The subject identifier (typically the user name)</param>
+		/// <param name="subjectId">The subject identifier</param>
 		/// <param name="additionalClaims">Additional claims to add to the principal</param>
 		/// <returns></returns>
 		public static ClaimsPrincipal FromSubjectId(string subjectId, IEnumerable<Claim> additionalClaims = null)

@@ -64,7 +64,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
 				user = new Models.User
 				{
-					Subject = CryptoRandom.CreateUniqueId(),
+					Id = CryptoRandom.CreateUniqueId(),
 					Provider = externalUser.Provider,
 					ProviderId = externalUser.ProviderId,
 					Username = displayName,
@@ -77,7 +77,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 					.ExecuteWithoutResults();
 			}
 
-			var result = new AuthenticateResult(user.Subject, user.Username);
+			var result = new AuthenticateResult(user.Id, user.Username);
 			return result;
 		}
 
@@ -108,7 +108,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 				return new AuthenticateResult("Authentication failed.");
 			}
 
-			return new AuthenticateResult(results.Single().Subject, username);
+			return new AuthenticateResult(results.Single().Id, username);
         }
 
 		/// <summary>

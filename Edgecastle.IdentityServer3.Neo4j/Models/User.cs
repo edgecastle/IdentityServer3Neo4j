@@ -13,12 +13,9 @@ namespace Edgecastle.IdentityServer3.Neo4j.Models
 	public class User
 	{
 		/// <summary>
-		/// Gets or sets the subject.
+		/// The unique identifier of this user
 		/// </summary>
-		/// <value>
-		/// The subject.
-		/// </value>
-		public string Subject { get; set; }
+		public string Id { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether this <see cref="User"/> is enabled.
@@ -26,7 +23,7 @@ namespace Edgecastle.IdentityServer3.Neo4j.Models
 		/// <value>
 		///   <c>true</c> if enabled; otherwise, <c>false</c>.
 		/// </value>
-		public bool Enabled { get; set; }
+		public bool IsEnabled { get; set; }
 
 		/// <summary>
 		/// Gets or sets the username.
@@ -73,7 +70,7 @@ namespace Edgecastle.IdentityServer3.Neo4j.Models
 		/// </summary>
 		public User()
 		{
-			Enabled = true;
+			IsEnabled = true;
 			Claims = new List<Claim>();
 		}
 	}
