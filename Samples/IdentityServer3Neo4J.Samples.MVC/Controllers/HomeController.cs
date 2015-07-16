@@ -27,5 +27,11 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 
 			return View();
 		}
+
+		public ActionResult Logout()
+		{
+			Request.GetOwinContext().Authentication.SignOut();
+			return Redirect("/");
+		}
 	}
 }

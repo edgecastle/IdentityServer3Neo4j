@@ -13,6 +13,31 @@ namespace Edgecastle.IdentityServer3.Neo4j.Models
 	public class Scope
 	{
 		/// <summary>
+		/// Converts a Neo4j-serializable Scope to the IdentityServer3 Scope object
+		/// </summary>
+		/// <param name="scopeClaim">The scope claim to add</param>
+		/// <returns>An IdentityServer3 scope representative of the Neo4j-serializable scope object.</returns>
+		internal Thinktecture.IdentityServer.Core.Models.Scope ToIdentityServerScope(ScopeClaim scopeClaim)
+		{
+			var idSrvScope = new Thinktecture.IdentityServer.Core.Models.Scope
+			{
+				Claims = new List<ScopeClaim> { scopeClaim },
+				ClaimsRule = this.ClaimsRule,
+				Description = this.Description,
+				DisplayName = this.DisplayName,
+				Emphasize = this.Emphasize,
+				Enabled = this.IsEnabled,
+				IncludeAllClaimsForUser = this.IncludeAllClaimsForUser,
+				Name = this.Name,
+				Required = this.Required,
+				ShowInDiscoveryDocument = this.ShowInDiscoveryDocument,
+				Type = this.Type
+			};
+
+			return idSrvScope;
+		}
+
+		/// <summary>
 		/// List of user claims that should be included in the identity (identity scope) or access token (resource scope).
 		/// </summary>
 		public ScopeClaim[] Claims { get; set; }
@@ -41,7 +66,7 @@ namespace Edgecastle.IdentityServer3.Neo4j.Models
 		/// Indicates if scope is enabled and can be requested. Defaults to true.
 		/// </summary>
 		public bool IsEnabled { get; set; }
-		
+
 		/// <summary>
 		/// If enabled, all claims for the user will be included in the token. Defaults to false.
 		/// </summary>
@@ -66,27 +91,5 @@ namespace Edgecastle.IdentityServer3.Neo4j.Models
 		/// Specifies whether this scope is about identity information from the userinfo endpoint, or a resource (e.g. a Web API). Defaults to Resource.
 		/// </summary>
 		public ScopeType Type { get; set; }
-
-		/// <summary>
-		/// Implicit casting to a Thinktecture IdentityServer3 scope
-		/// </summary>
-		/// <param name="scope">The Neo4j-compatible scope</param>
-		public static implicit operator Thinktecture.IdentityServer.Core.Models.Scope (Scope scope)
-		{
-			return new Thinktecture.IdentityServer.Core.Models.Scope
-			{
-				Claims = scope.Claims.ToList(),
-				ClaimsRule = scope.ClaimsRule,
-				Description = scope.Description,
-				DisplayName = scope.DisplayName,
-				Emphasize = scope.Emphasize,
-				Enabled = scope.IsEnabled,
-				IncludeAllClaimsForUser = scope.IncludeAllClaimsForUser,
-				Name = scope.Name,
-				Required = scope.Required,
-				ShowInDiscoveryDocument = scope.ShowInDiscoveryDocument,
-				Type = scope.Type
-			};
-		}
 	}
 }

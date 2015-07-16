@@ -23,6 +23,10 @@
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
                     <li>@Html.ActionLink("Authorized Menu Item", "About", "Home")</li>
                     <li>@Html.ActionLink("Run Initial DB Setup", "Index", "Setup")</li>
+@if (Request.IsAuthenticated)
+{
+                        <li>@Html.ActionLink("Sign out", "Logout", "Home")</li>
+}                        
                 </ul>
             </div>
         </div>
