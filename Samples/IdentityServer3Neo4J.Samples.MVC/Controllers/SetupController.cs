@@ -10,6 +10,7 @@ using System.Web;
 using System.Web.Mvc;
 using Thinktecture.IdentityServer.Core;
 using Thinktecture.IdentityServer.Core.Models;
+using Neo4jClient;
 
 namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 {
@@ -29,6 +30,68 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 			await CreateClientsAsync(DB);
 
 			Log("Creating user 'bob' with password 'secret'");
+			await CreateTestUser(DB);
+
+			Log("Creating Claims and adding to user 'bob'");
+			await AddClaimsToUserAsync(DB);
+
+			Log("Create 'roles' identity scope");
+			await CreateRolesScope(DB);
+
+			return Content("-END-");
+		}
+
+		private async Task CreateRolesScope(GraphClient DB)
+		{
+			Edgecastle.IdentityServer3.Neo4j.Models.Scope newScope = new Edgecastle.IdentityServer3.Neo4j.Models.Scope
+			{
+				IsEnabled = true,
+				Name = "roles",
+				Type = ScopeType.Identity
+			};
+			
+			try
+			{
+				await DB.Cypher
+					.Create("(s:Scope {newScope})")
+					.WithParam("newScope", newScope)
+					.ExecuteWithoutResultsAsync();
+		    }
+			catch(Exception ex)
+			{
+				LogException(ex);
+			}
+
+			try
+			{
+				var scopeClaims = new[]
+				{
+					new ScopeClaim("role")
+				};
+
+				foreach (var scopeClaim in scopeClaims)
+				{
+					Log("Adding scope claim '" + scopeClaim.Name + "'");
+					await DB.Cypher
+						.Match("(s:Scope { Name: {newScopeName} })")
+						.Create("(s)-[:HAS_CLAIM]->(sc:ScopeClaim {scopeClaim})")
+						.WithParams(new
+						{
+							newScopeName = newScope.Name,
+							scopeClaim = scopeClaim
+						})
+						.ExecuteWithoutResultsAsync();
+				}
+
+			}
+			catch (Exception ex)
+			{
+				LogException(ex);
+			}
+		}
+
+		private async Task CreateTestUser(Neo4jClient.GraphClient DB)
+		{
 			try
 			{
 				var newUser = new User
@@ -45,11 +108,6 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 			{
 				LogException(ex);
 			}
-
-			Log("Creating Claims and adding to user 'bob'");
-			await AddClaimsToUserAsync(DB);
-
-			return Content("-END-");
 		}
 
 		private async Task AddClaimsToUserAsync(Neo4jClient.GraphClient DB)
@@ -132,6 +190,12 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 						.ExecuteWithoutResultsAsync();
 				await DB.Cypher
 					.CreateUniqueConstraint("user:User", "user.Username")
+					.ExecuteWithoutResultsAsync();
+				await DB.Cypher
+					.CreateUniqueConstraint("scope:Scope", "scope.Name")
+					.ExecuteWithoutResultsAsync();
+				await DB.Cypher
+					.CreateUniqueConstraint("scopeClaim:ScopeClaim", "scopeClaim.Name")
 					.ExecuteWithoutResultsAsync();
 			}
 			catch (Exception ex)

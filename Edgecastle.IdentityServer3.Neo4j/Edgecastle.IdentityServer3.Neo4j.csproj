@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="Configuration.cs" />
     <Compile Include="Models\Claim.cs" />
+    <Compile Include="Models\Scope.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Neo4jClientStore.cs" />
     <Compile Include="Neo4jProvider.cs" />

@@ -42,6 +42,7 @@ namespace IdentityServer3Neo4J.Samples.MVC
 			{
 				Authority = "https://localhost:44300/identity",
 				ClientId = "mvcsample",
+				Scope = "openid profile roles",
 				RedirectUri = "https://localhost:44300/",
 				ResponseType = "id_token",
 
