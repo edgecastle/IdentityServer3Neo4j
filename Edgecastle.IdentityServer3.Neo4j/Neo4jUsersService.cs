@@ -19,7 +19,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 	public class Neo4jUsersService : IUserService
 	{
 		private GraphClient DB = null;
-
+		
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Neo4jUsersService"/> class.
 		/// </summary>

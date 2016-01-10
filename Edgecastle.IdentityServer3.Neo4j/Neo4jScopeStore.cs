@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Thinktecture.IdentityServer.Core.Logging;
 using Thinktecture.IdentityServer.Core.Services;
 
 namespace Edgecastle.IdentityServer3.Neo4j
@@ -17,6 +18,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 	public class Neo4jScopeStore : IScopeStore
 	{
 		private GraphClient DB = Neo4jProvider.GetClient();
+		private readonly static ILog Logger = LogProvider.GetCurrentClassLogger();
 
 		private async Task<List<Thinktecture.IdentityServer.Core.Models.Scope>> GetAllScopes()
 		{
@@ -25,6 +27,8 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
 		private async Task<List<Thinktecture.IdentityServer.Core.Models.Scope>> GetAllScopes(Expression<Func<Scope,bool>> whereClause)
 		{
+			Logger.DebugFormat("GetAllScopes, whereClause = {0}", whereClause.ToString());
+
 			var scopes = new List<Thinktecture.IdentityServer.Core.Models.Scope>();
 
 			var query = DB.Cypher
@@ -43,12 +47,17 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
 			var results = await query.ResultsAsync;
 
+			Logger.DebugFormat("GetAllScopes, found {0} scopes in the DB", results.Count());
+
 			if (results.Count() != 0)
 			{
 				scopes.AddRange(results.Select(s => s.Scope.ToIdentityServerScope(s.ScopeClaim)));
 			}
 
 			scopes.AddRange(Thinktecture.IdentityServer.Core.Models.StandardScopes.All);
+
+			Logger.DebugFormat("GetAllScopes, found total {0} scopes.", scopes.Count);
+
 			return scopes;
 		}
 
