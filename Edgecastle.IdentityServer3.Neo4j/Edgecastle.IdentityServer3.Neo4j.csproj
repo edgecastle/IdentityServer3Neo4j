@@ -34,6 +34,14 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BCrypt.Net, Version=0.1.4141.31969, Culture=neutral, PublicKeyToken=f3bc8f8c31beeb49, processorArchitecture=MSIL">
+      <HintPath>..\packages\BCrypt.Net.0.1.0\lib\net35\BCrypt.Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="BrockAllen.MembershipReboot, Version=8.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\BrockAllen.MembershipReboot.8.4.0\lib\net45\BrockAllen.MembershipReboot.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Neo4jClient, Version=1.0.0.662, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Neo4jClient.1.0.0.662\lib\net40\Neo4jClient.dll</HintPath>
       <Private>True</Private>
@@ -74,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
+    <Compile Include="Models\AuthenticationInfo.cs" />
     <Compile Include="Models\Claim.cs" />
     <Compile Include="Models\Scope.cs" />
     <Compile Include="Models\User.cs" />
@@ -81,6 +90,7 @@
     <Compile Include="Neo4jProvider.cs" />
     <Compile Include="Neo4jScopeStore.cs" />
     <Compile Include="Neo4jServiceFactory.cs" />
+    <Compile Include="PasswordSecurity.cs" />
     <Compile Include="PrincipalHelper.cs" />
     <Compile Include="Neo4jUsersService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

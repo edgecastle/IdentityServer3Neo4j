@@ -97,8 +97,8 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 				var newUser = new User
 				{
 					Username = "bob",
-					Password = "secret",
-					Id = "88421113",
+					Password = PasswordSecurity.Hash("secret"),
+					Id = Guid.NewGuid()
 				};
 				await DB.Cypher.Create("(u:User {newUser})")
 						.WithParam("newUser", newUser)

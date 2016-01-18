@@ -15,7 +15,7 @@ namespace Edgecastle.IdentityServer3.Neo4j.Models
 		/// <summary>
 		/// The unique identifier of this user
 		/// </summary>
-		public string Id { get; set; }
+		public Guid Id { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether this <see cref="User"/> is enabled.

@@ -64,7 +64,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
 				user = new Models.User
 				{
-					Id = CryptoRandom.CreateUniqueId(),
+					Id = Guid.NewGuid(),
 					Provider = externalUser.Provider,
 					ProviderId = externalUser.ProviderId,
 					Username = displayName,
@@ -77,7 +77,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 					.ExecuteWithoutResults();
 			}
 
-			var result = new AuthenticateResult(user.Id, user.Username);
+			var result = new AuthenticateResult(user.Id.ToString(), user.Username);
 			return result;
 		}
 
@@ -90,25 +90,20 @@ namespace Edgecastle.IdentityServer3.Neo4j
 		/// <returns></returns>
 		public async Task<AuthenticateResult> AuthenticateLocalAsync(string username, string password, SignInMessage message)
 		{
-			// TODO: Secure passwords
-			var query = DB.Cypher
-							.Match("(u:User {Username:{username}, Password:{password}})")
-							.WithParams(new
-							{
-								username = username,
-								password = password
-							})
-							.Return(u => u.As<Models.User>());
+            var usernameQuery = DB.Cypher
+                            .Match("(u:User {Username:{username}})")
+                            .WithParam("username", username.ToLowerInvariant())
+                            .Return(u => u.As<Models.AuthenticationInfo>());
 
-			var results = await query.ResultsAsync;
+            var authenticationInfo = (await usernameQuery.ResultsAsync).FirstOrDefault();
 
-			if(!results.Any())
-			{
-				// Couldn't find user with that username and/or password
-				return new AuthenticateResult("Authentication failed.");
-			}
+            if (authenticationInfo == null || !PasswordSecurity.Verify(input: password, hash: authenticationInfo.Password))
+            {
+                // Couldn't find user with that username and/or password
+                return new AuthenticateResult("Authentication failed.");
+            }
 
-			return new AuthenticateResult(results.Single().Id, username);
+			return new AuthenticateResult(authenticationInfo.Id.ToString(), authenticationInfo.Username);
         }
 
 		/// <summary>
