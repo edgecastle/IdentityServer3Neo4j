@@ -11,6 +11,7 @@ using System.Web.Mvc;
 using Thinktecture.IdentityServer.Core;
 using Thinktecture.IdentityServer.Core.Models;
 using Neo4jClient;
+using Edgecastle.IdentityServer3.Neo4j.Interfaces;
 
 namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 {
@@ -94,15 +95,12 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 		{
 			try
 			{
-				var newUser = new User
-				{
-					Username = "bob",
-					Password = PasswordSecurity.Hash("secret"),
-					Id = Guid.NewGuid()
-				};
-				await DB.Cypher.Create("(u:User {newUser})")
-						.WithParam("newUser", newUser)
-						.ExecuteWithoutResultsAsync();
+                IUserAdminService service = new Neo4jUsersService();
+                await service.CreateUser(
+                    username: "bob",
+                    password: PasswordSecurity.Hash("secret"),
+                    email: "bob@smithventures.com"
+                );
 			}
 			catch (Exception ex)
 			{
@@ -134,7 +132,7 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 						Log(String.Format("Adding claim: {0} = {1}", claim.Type, claim.Value));
 
 						await DB.Cypher.Match("(u:User {Username:'bob'})")
-							.CreateUnique("(u)-[:HAS_CLAIM]->(c:Claim {claim})") // Means we don't give the same claim twice
+							.CreateUnique("(u)-[:HAS_CLAIM]->(c:Claim {claim})")
 							.WithParam("claim", claim)
 							.ExecuteWithoutResultsAsync();
 					}
@@ -169,11 +167,17 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 					}
 				};
 
-				await DB.Cypher.Create("(c:Client {newClient})")
-						.WithParam("newClient", newClient)
-						.ExecuteWithoutResultsAsync();
+                IClientAdminService service = new Neo4jClientStore();
+                var result = await service.CreateClient(newClient);
 
-				Log("Done");
+                if (result.Success)
+                {
+                    Log("Done");
+                }
+                else
+                {
+                    Log("ERROR: " + result.ErrorMessage, true);
+                }
 			}
 			catch (Exception ex)
 			{

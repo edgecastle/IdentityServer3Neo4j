@@ -1,4 +1,5 @@
 ﻿using Edgecastle.Data.Neo4j;
+using Edgecastle.IdentityServer3.Neo4j.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,20 +7,62 @@ using System.Text;
 using System.Threading.Tasks;
 using Thinktecture.IdentityServer.Core.Models;
 using Thinktecture.IdentityServer.Core.Services;
+using Edgecastle.IdentityServer3.Neo4j.Models;
 
 namespace Edgecastle.IdentityServer3.Neo4j
 {
 	/// <summary>
 	/// A client store backed by a Neo4j graph database
 	/// </summary>
-	public class Neo4jClientStore : IClientStore
+	public class Neo4jClientStore : IClientStore, IClientAdminService
 	{
-		/// <summary>
-		/// Finds a client by its identifier
-		/// </summary>
-		/// <param name="clientId">The unique identifier for the client</param>
-		/// <returns>The client, if found, otherwise null.</returns>
-		public async Task<Client> FindClientByIdAsync(string clientId)
+        /// <summary>
+        /// Creates a client
+        /// </summary>
+        /// <param name="client"></param>
+        /// <returns></returns>
+        public async Task<ClientAdminResult> CreateClient(Client client)
+        {
+            Client newClient = null;
+
+            try
+            {
+                var DB = Neo4jProvider.GetClient();
+
+                // Only copy user-settable fields (whitelisting)
+                newClient = new Client
+                {
+                    Enabled = client.Enabled,
+                    ClientName = client.ClientName,
+                    ClientId = client.ClientId,
+                    Flow = Flows.Implicit,
+
+                    // TODO - Uniqueness of redirect uris
+                    RedirectUris = new List<string>
+                {
+                    client.RedirectUris.FirstOrDefault()
+                }
+                };
+
+                await DB.Cypher.Create("(c:Client {newClient})")
+                        .WithParam("newClient", newClient)
+                        .ExecuteWithoutResultsAsync();
+            }
+            catch (Neo4jClient.NeoException ex)
+            {
+                // TODO: Log
+                return new ClientAdminResult(ex.Message);
+            }
+
+            return new ClientAdminResult(newClient);
+        }
+
+        /// <summary>
+        /// Finds a client by its identifier
+        /// </summary>
+        /// <param name="clientId">The unique identifier for the client</param>
+        /// <returns>The client, if found, otherwise null.</returns>
+        public async Task<Client> FindClientByIdAsync(string clientId)
 		{
 			var DB = Neo4jProvider.GetClient();
 

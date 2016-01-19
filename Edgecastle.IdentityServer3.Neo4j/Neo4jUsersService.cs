@@ -1,4 +1,5 @@
 ﻿using Edgecastle.Data.Neo4j;
+using Edgecastle.IdentityServer3.Neo4j.Interfaces;
 using Neo4jClient;
 using System;
 using System.Collections.Generic;
@@ -10,13 +11,14 @@ using Thinktecture.IdentityModel;
 using Thinktecture.IdentityServer.Core;
 using Thinktecture.IdentityServer.Core.Models;
 using Thinktecture.IdentityServer.Core.Services;
+using Edgecastle.IdentityServer3.Neo4j.Models;
 
 namespace Edgecastle.IdentityServer3.Neo4j
 {
 	/// <summary>
 	/// Users service backed by Neo4j graph database
 	/// </summary>
-	public class Neo4jUsersService : IUserService
+	public class Neo4jUsersService : IUserService, IUserAdminService
 	{
 		private GraphClient DB = null;
 		
@@ -28,13 +30,58 @@ namespace Edgecastle.IdentityServer3.Neo4j
 			DB = Neo4jProvider.GetClient();
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="externalUser"></param>
-		/// <param name="message"></param>
-		/// <returns></returns>
-		public async Task<AuthenticateResult> AuthenticateExternalAsync(ExternalIdentity externalUser, SignInMessage message)
+        /// <summary>
+        /// Adds claims to a user
+        /// </summary>
+        /// <param name="userId">The unique, system-readable identifier of the user</param>
+        /// <param name="claims">The claims</param>
+        /// <returns></returns>
+        public async Task<UserAdminResult> AddClaimsToUser(Guid userId, IEnumerable<Models.Claim> claims)
+        {
+            foreach (var claim in claims)
+            {
+
+            }
+        }
+
+        /// <summary>
+        /// Adds a claim to a user
+        /// </summary>
+        /// <param name="userId">The unique, system-readable identifier for the user</param>
+        /// <param name="claim"></param>
+        /// <returns></returns>
+        public async Task<UserAdminResult> AddClaimToUser(Guid userId, Models.Claim claim)
+        {
+            try
+            {
+                var results  = await DB.Cypher.Match("(u:User {Id: {id}})")
+                                .WithParam("id", userId)
+                                .CreateUnique("(u)-[:HAS_CLAIM]->(c:Claim {claim})")
+                                .WithParam("claim", claim)
+                                .Return((u,c) => new
+                                {
+                                    User = u.As<User>(),
+                                    Claims = c.CollectAs<Models.Claim>()
+                                })
+                                .ResultsAsync;
+
+                User user = results.First().User;
+                user.Claims = results.First().Claims.Select(cl => cl.Data);
+                return new UserAdminResult(user);
+            }
+            catch (NeoException ex)
+            {
+                return new UserAdminResult(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="externalUser"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public async Task<AuthenticateResult> AuthenticateExternalAsync(ExternalIdentity externalUser, SignInMessage message)
 		{
 			// TODO: External providers as separate nodes
 			var query = DB.Cypher
@@ -106,13 +153,52 @@ namespace Edgecastle.IdentityServer3.Neo4j
 			return new AuthenticateResult(authenticationInfo.Id.ToString(), authenticationInfo.Username);
         }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="subject"></param>
-		/// <param name="requestedClaimTypes"></param>
-		/// <returns></returns>
-		public async Task<IEnumerable<Claim>> GetProfileDataAsync(ClaimsPrincipal subject, IEnumerable<string> requestedClaimTypes = null)
+        /// <summary>
+        /// Creates a new user
+        /// </summary>
+        /// <param name="username">The username (must be unique)</param>
+        /// <param name="password">The password</param>
+        /// <param name="email">The user's email address</param>
+        /// <returns></returns>
+        public async Task<AuthenticateResult> CreateUser(string username, string password, string email)
+        {
+            // Normalisation
+            username = username.ToLowerInvariant();
+
+            var existingUser = await DB.Cypher
+                                    .Match("(existing:User {Username: {username}})")
+                                    .WithParam("username", username)
+                                    .Return(existing => existing.As<Models.User>())
+                                    .ResultsAsync;
+
+            if(existingUser.Any())
+            {
+                return new AuthenticateResult("Username already exists");
+            }
+
+            var newUser = new Models.User
+            {
+                Username = username,
+                Password = PasswordSecurity.Hash(password),
+                Id = Guid.NewGuid()
+            };
+            await DB.Cypher.Create("(u:User {newUser})")
+                    .WithParam("newUser", newUser)
+                    .ExecuteWithoutResultsAsync();
+
+            return new AuthenticateResult(
+                subject: newUser.Id.ToString(),
+                name: newUser.Username
+            );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="subject"></param>
+        /// <param name="requestedClaimTypes"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Claim>> GetProfileDataAsync(ClaimsPrincipal subject, IEnumerable<string> requestedClaimTypes = null)
 		{
 			// TODO: This is all temporary
 			var query = DB.Cypher
@@ -181,5 +267,10 @@ namespace Edgecastle.IdentityServer3.Neo4j
 			}
 			return user.Username;*/
 		}
-	}
+
+        Task<UserAdminResult> IUserAdminService.CreateUser(string username, string password, string email)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
