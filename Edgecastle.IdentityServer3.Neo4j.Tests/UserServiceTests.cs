@@ -3,6 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Edgecastle.IdentityServer3.Neo4j.Interfaces;
+using System.Threading.Tasks;
 
 namespace Edgecastle.IdentityServer3.Neo4j.Tests
 {
@@ -12,62 +13,50 @@ namespace Edgecastle.IdentityServer3.Neo4j.Tests
     [TestClass]
     public class UserServiceTests
     {
-        public UserServiceTests()
-        {
-            //
-            // TODO: Add constructor logic here
-            //
-        }
-
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
-        #region Additional test attributes
-        //
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-        // Use TestInitialize to run code before running each test 
-        // [TestInitialize()]
-        // public void MyTestInitialize() { }
-        //
-        // Use TestCleanup to run code after each test has run
-        // [TestCleanup()]
-        // public void MyTestCleanup() { }
-        //
-        #endregion
-
         [TestMethod]
-        public void TestCanCreateUser()
+        public async Task Test_ValidNewUser_CreatesSuccessfully()
         {
             // Arrange
             IUserAdminService userService = new Neo4jUsersService();
 
             // Act
+            var result = await CreateUser(userService, String.Format("TestUser_{0}", Guid.NewGuid()));
 
             // Assert
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.Success);
+            Assert.IsNotNull(result.User);
+            Assert.AreNotEqual(Guid.Empty, result.User.Id);
+        }
+
+        [TestMethod]
+        public async Task Test_NewUserWithExistingUsername_FailsToCreate()
+        {
+            // Arrange
+            IUserAdminService service = new Neo4jUsersService();
+            string usernameToDuplicate = String.Format("TestUser_{0}", Guid.NewGuid());
+
+            // Act
+            // This one should work.
+            Models.UserAdminResult shouldBeSuccessful = await CreateUser(service, usernameToDuplicate);
+
+            // This one should fail due to username duplication.
+            Models.UserAdminResult shouldFail = await CreateUser(service, usernameToDuplicate);
+
+            // Assert
+            Assert.IsTrue(shouldBeSuccessful.Success);
+            Assert.IsFalse(shouldFail.Success);
+            Assert.AreEqual("Username already exists", shouldFail.ErrorMessage);
+
+        }
+
+        private static async Task<Models.UserAdminResult> CreateUser(IUserAdminService service, string username)
+        {
+            return await service.CreateUser(
+                            username: username,
+                            password: "secret",
+                            email: "blahblah@blahhhhhh.com"
+                        );
         }
     }
 }

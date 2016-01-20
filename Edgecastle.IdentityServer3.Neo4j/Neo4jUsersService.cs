@@ -11,7 +11,6 @@ using Thinktecture.IdentityModel;
 using Thinktecture.IdentityServer.Core;
 using Thinktecture.IdentityServer.Core.Models;
 using Thinktecture.IdentityServer.Core.Services;
-using Edgecastle.IdentityServer3.Neo4j.Models;
 
 namespace Edgecastle.IdentityServer3.Neo4j
 {
@@ -36,12 +35,16 @@ namespace Edgecastle.IdentityServer3.Neo4j
         /// <param name="userId">The unique, system-readable identifier of the user</param>
         /// <param name="claims">The claims</param>
         /// <returns></returns>
-        public async Task<UserAdminResult> AddClaimsToUser(Guid userId, IEnumerable<Models.Claim> claims)
+        public async Task<IEnumerable<Models.UserAdminResult>> AddClaimsToUser(Guid userId, IEnumerable<Models.Claim> claims)
         {
+            List<Models.UserAdminResult> results = new List<Models.UserAdminResult>();
+
             foreach (var claim in claims)
             {
-
+                results.Add(await this.AddClaimToUser(userId, claim));
             }
+
+            return results;
         }
 
         /// <summary>
@@ -50,7 +53,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
         /// <param name="userId">The unique, system-readable identifier for the user</param>
         /// <param name="claim"></param>
         /// <returns></returns>
-        public async Task<UserAdminResult> AddClaimToUser(Guid userId, Models.Claim claim)
+        public async Task<Models.UserAdminResult> AddClaimToUser(Guid userId, Models.Claim claim)
         {
             try
             {
@@ -60,18 +63,18 @@ namespace Edgecastle.IdentityServer3.Neo4j
                                 .WithParam("claim", claim)
                                 .Return((u,c) => new
                                 {
-                                    User = u.As<User>(),
+                                    User = u.As<Models.User>(),
                                     Claims = c.CollectAs<Models.Claim>()
                                 })
                                 .ResultsAsync;
 
-                User user = results.First().User;
+                Models.User user = results.First().User;
                 user.Claims = results.First().Claims.Select(cl => cl.Data);
-                return new UserAdminResult(user);
+                return new Models.UserAdminResult(user);
             }
             catch (NeoException ex)
             {
-                return new UserAdminResult(ex.Message);
+                return new Models.UserAdminResult(ex.Message);
             }
         }
 
@@ -160,7 +163,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
         /// <param name="password">The password</param>
         /// <param name="email">The user's email address</param>
         /// <returns></returns>
-        public async Task<AuthenticateResult> CreateUser(string username, string password, string email)
+        public async Task<Models.UserAdminResult> CreateUser(string username, string password, string email)
         {
             // Normalisation
             username = username.ToLowerInvariant();
@@ -173,7 +176,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
             if(existingUser.Any())
             {
-                return new AuthenticateResult("Username already exists");
+                return new Models.UserAdminResult("Username already exists");
             }
 
             var newUser = new Models.User
@@ -186,10 +189,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
                     .WithParam("newUser", newUser)
                     .ExecuteWithoutResultsAsync();
 
-            return new AuthenticateResult(
-                subject: newUser.Id.ToString(),
-                name: newUser.Username
-            );
+            return new Models.UserAdminResult(newUser);
         }
 
         /// <summary>
@@ -267,10 +267,5 @@ namespace Edgecastle.IdentityServer3.Neo4j
 			}
 			return user.Username;*/
 		}
-
-        Task<UserAdminResult> IUserAdminService.CreateUser(string username, string password, string email)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

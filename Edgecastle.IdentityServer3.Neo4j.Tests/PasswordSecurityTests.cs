@@ -7,17 +7,33 @@ namespace Edgecastle.IdentityServer3.Neo4j.Tests
     public class PasswordSecurityTests
     {
         [TestMethod]
-        public void CanCreateStableSaltedHash()
+        public void Test_ValidPassword_IsCorrectlyHashedAndVerified()
         {
             //  Arrange
             string password = "secret";
 
             // Act
             string hash = PasswordSecurity.Hash(password);
+            bool isVerified = PasswordSecurity.Verify(password, hash);
 
             // Assert
             Assert.IsNotNull(hash);
-            Assert.AreEqual("$2a$10$L5t4hlYSpmDtUs36Of4Lc.LLiH67lk.qv1.GTrihYu3u7QnP4SJTS", hash);
+            Assert.IsTrue(isVerified);
+        }
+
+        [TestMethod]
+        public void Test_InvalidPassword_DoesNotVerify()
+        {
+            //  Arrange
+            string password = "secret";
+
+            // Act
+            string hash = PasswordSecurity.Hash(password);
+            bool isVerified = PasswordSecurity.Verify("Not the password!!!!", hash);
+
+            // Assert
+            Assert.IsNotNull(hash);
+            Assert.IsFalse(isVerified);
         }
     }
 }

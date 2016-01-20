@@ -36,6 +36,6 @@ namespace Edgecastle.IdentityServer3.Neo4j.Interfaces
         /// <param name="userId">The unique system-readable identifier of the user to which to attach the claims</param>
         /// <param name="claims">The claims to attach to the user</param>
         /// <returns></returns>
-        Task<UserAdminResult> AddClaimsToUser(Guid userId, IEnumerable<Claim> claims);
+        Task<IEnumerable<UserAdminResult>> AddClaimsToUser(Guid userId, IEnumerable<Claim> claims);
     }
 }
