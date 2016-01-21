@@ -20,23 +20,22 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
         public async Task<ActionResult> Index()
 		{
 			Log("Setting up Graph DB...");
-			var DB = Neo4jProvider.GetClient();
-
-			Log("Creating constraints");
-			await CreateConstraintsAsync(DB);
-
+            
 			// Clients
 			Log("Creating client for sample app...");
-			await CreateClientsAsync(DB);
+			await CreateClientsAsync();
 
+            // Create a test user
 			Log("Creating user 'bob' with password 'secret'");
-			await CreateTestUser(DB);
+			User user = await CreateTestUser();
 
+            // Adding claims to user
 			Log("Creating Claims and adding to user 'bob'");
-			await AddClaimsToUserAsync(DB);
+			await AddClaimsToUserAsync(user);
 
+            // Creating 'roles' scope
 			Log("Create 'roles' identity scope");
-			await CreateRolesScope(DB);
+			await CreateRolesScope();
 
 			return Content("-END-");
 		}
@@ -76,27 +75,33 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
             }
 		}
 
-		private async Task CreateTestUser(Neo4jClient.GraphClient DB)
+		private async Task<User> CreateTestUser()
 		{
 			try
 			{
                 IUserAdminService service = new Neo4jUsersService();
-                await service.CreateUser(
+                UserAdminResult result = await service.CreateUser(
                     username: "bob",
                     password: PasswordSecurity.Hash("secret"),
                     email: "bob@smithventures.com"
                 );
+
+                return result.Success ? result.User : null;
 			}
 			catch (Exception ex)
 			{
 				LogException(ex);
 			}
+
+            return null;
 		}
 
-		private async Task AddClaimsToUserAsync(Neo4jClient.GraphClient DB)
+		private async Task AddClaimsToUserAsync(User user)
 		{
 			try
 			{
+                IUserAdminService service = new Neo4jUsersService();
+
 				var claims = new[]
 				{
 					new Claim { Type = Constants.ClaimTypes.Name, Value = "Bob Smith" },
@@ -116,10 +121,8 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 					{
 						Log(String.Format("Adding claim: {0} = {1}", claim.Type, claim.Value));
 
-						await DB.Cypher.Match("(u:User {Username:'bob'})")
-							.CreateUnique("(u)-[:HAS_CLAIM]->(c:Claim {claim})")
-							.WithParam("claim", claim)
-							.ExecuteWithoutResultsAsync();
+                        UserAdminResult result = await service.AddClaimToUser(user.Id, claim);
+                        Log(String.Format("Success = {0}, ErrorMessage = {1}", result.Success, result.ErrorMessage ?? ""));
 					}
 					catch(Exception ex)
 					{
@@ -135,7 +138,7 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 			}
 		}
 
-		private async Task CreateClientsAsync(Neo4jClient.GraphClient DB)
+		private async Task CreateClientsAsync()
 		{
 			try
 			{
@@ -163,29 +166,6 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
                 {
                     Log("ERROR: " + result.ErrorMessage, true);
                 }
-			}
-			catch (Exception ex)
-			{
-				LogException(ex);
-			}
-		}
-
-		private async Task CreateConstraintsAsync(Neo4jClient.GraphClient DB)
-		{
-			try
-			{
-				await DB.Cypher
-						.CreateUniqueConstraint("client:Client", "client.ClientId")
-						.ExecuteWithoutResultsAsync();
-				await DB.Cypher
-					.CreateUniqueConstraint("user:User", "user.Username")
-					.ExecuteWithoutResultsAsync();
-				await DB.Cypher
-					.CreateUniqueConstraint("scope:Scope", "scope.Name")
-					.ExecuteWithoutResultsAsync();
-				await DB.Cypher
-					.CreateUniqueConstraint("scopeClaim:ScopeClaim", "scopeClaim.Name")
-					.ExecuteWithoutResultsAsync();
 			}
 			catch (Exception ex)
 			{

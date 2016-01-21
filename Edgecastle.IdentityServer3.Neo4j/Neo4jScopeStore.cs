@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Thinktecture.IdentityServer.Core.Logging;
 using Thinktecture.IdentityServer.Core.Services;
 using Thinktecture.IdentityServer.Core.Models;
-using Edgecastle.IdentityServer3.Neo4j.Models;
 
 namespace Edgecastle.IdentityServer3.Neo4j
 {
@@ -37,8 +36,8 @@ namespace Edgecastle.IdentityServer3.Neo4j
 							.Match("(s:Scope)-[:HAS_CLAIM]->(sc:ScopeClaim)")
 							.Return((s, sc) => new
 							 {
-								 Scope = s.As<Scope>(),
-								 ScopeClaim = sc.As<Thinktecture.IdentityServer.Core.Models.ScopeClaim>()
+								 Scope = s.As<Models.Scope>(),
+								 ScopeClaim = sc.As<ScopeClaim>()
 							 });
 
 			// Support filtering
@@ -56,7 +55,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 				scopes.AddRange(results.Select(s => s.Scope.ToIdentityServerScope(s.ScopeClaim)));
 			}
 
-			scopes.AddRange(Thinktecture.IdentityServer.Core.Models.StandardScopes.All);
+			scopes.AddRange(StandardScopes.All);
 
 			Logger.DebugFormat("GetAllScopes, found total {0} scopes.", scopes.Count);
 
@@ -156,9 +155,9 @@ namespace Edgecastle.IdentityServer3.Neo4j
         /// <param name="scopeName">The name of the scope to add the claims to</param>
         /// <param name="claims">The claims to add</param>
         /// <returns></returns>
-        public async Task<IEnumerable<ScopeAdminResult>> AddScopeClaims(string scopeName, IEnumerable<ScopeClaim> claims)
+        public async Task<IEnumerable<Models.ScopeAdminResult>> AddScopeClaims(string scopeName, IEnumerable<ScopeClaim> claims)
         {
-            List<ScopeAdminResult> results = new List<ScopeAdminResult>();
+            List<Models.ScopeAdminResult> results = new List<Models.ScopeAdminResult>();
 
             foreach (ScopeClaim claim in claims)
             {
