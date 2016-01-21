@@ -10,7 +10,6 @@ using System.Web;
 using System.Web.Mvc;
 using Thinktecture.IdentityServer.Core;
 using Thinktecture.IdentityServer.Core.Models;
-using Neo4jClient;
 using Edgecastle.IdentityServer3.Neo4j.Interfaces;
 
 namespace IdentityServer3Neo4J.Samples.MVC.Controllers
@@ -42,7 +41,7 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 			return Content("-END-");
 		}
 
-		private async Task CreateRolesScope(GraphClient DB)
+		private async Task CreateRolesScope()
 		{
 			Edgecastle.IdentityServer3.Neo4j.Models.Scope newScope = new Edgecastle.IdentityServer3.Neo4j.Models.Scope
 			{
@@ -50,45 +49,31 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 				Name = "roles",
 				Type = ScopeType.Identity
 			};
-			
-			try
-			{
-				await DB.Cypher
-					.Create("(s:Scope {newScope})")
-					.WithParam("newScope", newScope)
-					.ExecuteWithoutResultsAsync();
-		    }
-			catch(Exception ex)
-			{
-				LogException(ex);
-			}
 
-			try
-			{
-				var scopeClaims = new[]
-				{
-					new ScopeClaim("role")
-				};
+            IScopeAdminService service = new Neo4jScopeStore();
+            ScopeAdminResult scopeResult = await service.CreateScope(newScope);
+            if (scopeResult.Success)
+            {
+                Log("Created scope.");
 
-				foreach (var scopeClaim in scopeClaims)
-				{
-					Log("Adding scope claim '" + scopeClaim.Name + "'");
-					await DB.Cypher
-						.Match("(s:Scope { Name: {newScopeName} })")
-						.Create("(s)-[:HAS_CLAIM]->(sc:ScopeClaim {scopeClaim})")
-						.WithParams(new
-						{
-							newScopeName = newScope.Name,
-							scopeClaim = scopeClaim
-						})
-						.ExecuteWithoutResultsAsync();
-				}
+                try
+                {
+                    var scopeClaims = new[]
+                    {
+                        new ScopeClaim("role")
+                    };
 
-			}
-			catch (Exception ex)
-			{
-				LogException(ex);
-			}
+                    foreach (var scopeClaim in scopeClaims)
+                    {
+                        Log("Adding scope claim '" + scopeClaim.Name + "'");
+                        ScopeAdminResult result = await service.AddScopeClaim(newScope.Name, scopeClaim);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex);
+                }
+            }
 		}
 
 		private async Task CreateTestUser(Neo4jClient.GraphClient DB)

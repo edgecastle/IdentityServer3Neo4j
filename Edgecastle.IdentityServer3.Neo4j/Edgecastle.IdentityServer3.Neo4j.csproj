@@ -83,7 +83,9 @@
   <ItemGroup>
     <Compile Include="Configuration.cs" />
     <Compile Include="Interfaces\IClientAdminService.cs" />
+    <Compile Include="Interfaces\IScopeAdminService.cs" />
     <Compile Include="Interfaces\IUserAdminService.cs" />
+    <Compile Include="Models\ScopeAdminResult.cs" />
     <Compile Include="Models\UserAdminResult.cs" />
     <Compile Include="Models\AuthenticationInfo.cs" />
     <Compile Include="Models\Claim.cs" />
