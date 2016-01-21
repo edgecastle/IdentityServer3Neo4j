@@ -19,9 +19,9 @@ namespace IdentityServer3Neo4J.Samples.MVC
 {
 	public class Startup
 	{
-		public async Task Configuration(IAppBuilder app)
+		public void Configuration(IAppBuilder app)
 		{
-			app.Map("/identity", async idsrvApp =>
+			app.Map("/identity", idsrvApp =>
 			{
 				idsrvApp.UseIdentityServer(new IdentityServerOptions
 				{
@@ -29,7 +29,7 @@ namespace IdentityServer3Neo4J.Samples.MVC
 					SigningCertificate = LoadCertificate(),
 
 					// Reference the Neo4j version of the services factory
-					Factory = await Neo4jServiceFactory.Create()					
+					Factory = Neo4jServiceFactory.Create().Result
 				});
 			});
 

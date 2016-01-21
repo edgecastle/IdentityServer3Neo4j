@@ -13,7 +13,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 	/// <summary>
 	/// Helpers for operations on the <see cref="ClaimsPrincipal"/>.
 	/// </summary>
-	public static class PrincipalHelper
+	internal static class PrincipalHelper
 	{
 		/// <summary>
 		/// Creates a claims principal from a set of claims

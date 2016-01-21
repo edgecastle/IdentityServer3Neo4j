@@ -82,7 +82,7 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
                 IUserAdminService service = new Neo4jUsersService();
                 UserAdminResult result = await service.CreateUser(
                     username: "bob",
-                    password: PasswordSecurity.Hash("secret"),
+                    password: "secret",
                     email: "bob@smithventures.com"
                 );
 

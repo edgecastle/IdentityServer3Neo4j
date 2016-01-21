@@ -3,7 +3,7 @@
     /// <summary>
     /// Performs cryptographic operations on a password
     /// </summary>
-    public static class PasswordSecurity
+    internal static class PasswordSecurity
     {
         private const int BCryptWorkFactor = 10; // Recommended
 

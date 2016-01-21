@@ -124,8 +124,8 @@ namespace Edgecastle.IdentityServer3.Neo4j
                                 .CreateUnique("(s)-[:HAS_CLAIM]->(sc:ScopeClaim {claim})")
                                 .WithParams(new
                                 {
-                                    newScopeName = scopeName,
-                                    scopeClaim = claim
+                                    scopeName = scopeName,
+                                    claim = claim
                                 })
                                 // TODO: Return all scope claims
                                 .Return((s,sc) => new
