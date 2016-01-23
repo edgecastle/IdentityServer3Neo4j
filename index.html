@@ -43,14 +43,32 @@
         <pre>app.Map("/identity", idsrvApp =>
 {
     idsrvApp.UseIdentityServer(new IdentityServerOptions
-	{
-	    SiteName = "Your site",
+    {
+        SiteName = "Your site",
         SigningCertificate = LoadCertificate(),
 			
     	// Reference the Neo4j version of the services factory
-		Factory = Neo4jServiceFactory.Create()
-	});
+        <b>Factory = Neo4jServiceFactory.Create()</b>
+    });
 });</pre>
+
+        <p>It's as simple as that.</p>
+
+        <h1>Got any samples?</h1>
+
+        <p>Sure, once you have IdentityServer3 backed by Neo4j the first question we asked ourselves was 'how do I get users into the system?'. 
+        The <a href="http://github.com/edgecastle/identityserver3neo4j/" target="_blank">source code on Github</a> includes an OWIN ASP.NET MVC application 
+        which includes examples how to drive the Graph services for users, clients, claims and scopes to persist identity and authorization data.</p>
+
+        <h1>Is there a roadmap? How actively developed will this be?</h1>
+
+        <p>Here at <a href="http://www.edgecastle.com/" target="_blank">Edgecastle</a> we're betting big on Graph technologies, with Neo4j being a particular 
+        favourite. IdentityServer3Neo4j is a cut of our internal code (properly santized of course) ready for public consumption. We are <b>actively</b> incubating and developing commercial 
+        products built on top of IdentityServer3Neo4j and will continue to release cuts of our internal code as we introduce new features that
+        we feel will provide value to the community.</p>
+
+        <p>With the library's evolution being linked to various undisclosed products' development we are unable to publish a roadmap, however, we will
+        consider all pull requests based on their individual merits and (where possible) without prejudice from the internal roadmap.</p>
 
     </section>
 
