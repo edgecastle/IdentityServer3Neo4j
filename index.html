@@ -36,17 +36,20 @@
 
         <p>We've tried to make it as easy as possible to bring Neo4j into your IdentityServer3 implementation, or vice-versa, bring identity data into your Neo4j graph.</p>
 
-        <p>Assuming a brand new ASP.NET web app, start by adding the IdentityServer3 nuget package to your project.</p>
+        <p>First, <a href="https://identityserver.github.io/Documentation/docsv2/overview/simplestOAuth.html">set up IdentityServer3</a> in your project. Brock Allen and Dominick Baier have done a great job with the documentation.</p>
 
-        <pre>Install-Package IdentityServer3</pre>
+        <p>Then update the app.useIdentityServer() method to use the Neo4j factory instead of the default, in-memory one:</p>
 
-        <p>Next, install the IdentityServer3Neo4j nuget package:</p>
-
-        <pre>Install-Package Edgecastle.IdentityServer3Neo4j</pre>
-
-        <p>If you don't have one already, add a new OWIN Startup file to the project.</p>
-
-
+        <pre>           app.Map("/identity", idsrvApp =>
+            {
+				idsrvApp.UseIdentityServer(new IdentityServerOptions
+				{
+					SiteName = "Your site",
+					SigningCertificate = LoadCertificate(),
+					// Reference the Neo4j version of the services factory
+					Factory = Neo4jServiceFactory.Create()
+				});
+			});</pre>
 
     </section>
 
