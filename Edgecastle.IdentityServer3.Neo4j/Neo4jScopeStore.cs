@@ -7,9 +7,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using Thinktecture.IdentityServer.Core.Logging;
-using Thinktecture.IdentityServer.Core.Services;
-using Thinktecture.IdentityServer.Core.Models;
+using IdentityServer3.Core.Logging;
+using IdentityServer3.Core.Services;
+using IdentityServer3.Core.Models;
 
 namespace Edgecastle.IdentityServer3.Neo4j
 {

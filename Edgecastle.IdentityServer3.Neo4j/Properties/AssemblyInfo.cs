@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Edgecastle.IdentityServer3.Neo4j")]
-[assembly: AssemblyDescription("Neo4j Graph Database services for Thinktecture IdentityServer3")]
+[assembly: AssemblyDescription("Neo4j Graph Database stores and services for IdentityServer3")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Edgecastle")]
 [assembly: AssemblyProduct("Edgecastle.IdentityServer3.Neo4j")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

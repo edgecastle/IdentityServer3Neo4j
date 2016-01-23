@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using Thinktecture.IdentityServer.Core;
+using IdentityServer3.Core;
 
 namespace Edgecastle.IdentityServer3.Neo4j.Models
 {

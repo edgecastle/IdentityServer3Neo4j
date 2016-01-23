@@ -5,7 +5,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Thinktecture.IdentityModel;
-using Thinktecture.IdentityServer.Core;
+using IdentityServer3.Core;
 using Thinktecture.IdentityModel.Extensions;
 
 namespace Edgecastle.IdentityServer3.Neo4j

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Thinktecture.IdentityServer.Core.Models;
+using IdentityServer = IdentityServer3.Core.Models;
 
 namespace Edgecastle.IdentityServer3.Neo4j.Models
 {
@@ -17,11 +17,11 @@ namespace Edgecastle.IdentityServer3.Neo4j.Models
 		/// </summary>
 		/// <param name="scopeClaim">The scope claim to add</param>
 		/// <returns>An IdentityServer3 scope representative of the Neo4j-serializable scope object.</returns>
-		internal Thinktecture.IdentityServer.Core.Models.Scope ToIdentityServerScope(ScopeClaim scopeClaim)
+		internal IdentityServer.Scope ToIdentityServerScope(IdentityServer.ScopeClaim scopeClaim)
 		{
-			var idSrvScope = new Thinktecture.IdentityServer.Core.Models.Scope
+			var idSrvScope = new IdentityServer.Scope
 			{
-				Claims = new List<ScopeClaim> { scopeClaim },
+				Claims = new List<IdentityServer.ScopeClaim> { scopeClaim },
 				ClaimsRule = this.ClaimsRule,
 				Description = this.Description,
 				DisplayName = this.DisplayName,
@@ -40,7 +40,7 @@ namespace Edgecastle.IdentityServer3.Neo4j.Models
 		/// <summary>
 		/// List of user claims that should be included in the identity (identity scope) or access token (resource scope).
 		/// </summary>
-		public ScopeClaim[] Claims { get; set; }
+		public IdentityServer.ScopeClaim[] Claims { get; set; }
 
 		/// <summary>
 		/// Rule for determining which claims should be included in the token (this is implementation specific)
@@ -90,6 +90,6 @@ namespace Edgecastle.IdentityServer3.Neo4j.Models
 		/// <summary>
 		/// Specifies whether this scope is about identity information from the userinfo endpoint, or a resource (e.g. a Web API). Defaults to Resource.
 		/// </summary>
-		public ScopeType Type { get; set; }
+		public IdentityServer.ScopeType Type { get; set; }
 	}
 }

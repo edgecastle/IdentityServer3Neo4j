@@ -8,9 +8,9 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Thinktecture.IdentityModel;
-using Thinktecture.IdentityServer.Core;
-using Thinktecture.IdentityServer.Core.Models;
-using Thinktecture.IdentityServer.Core.Services;
+using IdentityServer3.Core;
+using IdentityServer3.Core.Models;
+using IdentityServer3.Core.Services;
 
 namespace Edgecastle.IdentityServer3.Neo4j
 {
@@ -81,18 +81,17 @@ namespace Edgecastle.IdentityServer3.Neo4j
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="externalUser"></param>
-        /// <param name="message"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        public async Task<AuthenticateResult> AuthenticateExternalAsync(ExternalIdentity externalUser, SignInMessage message)
+        public async Task AuthenticateExternalAsync(ExternalAuthenticationContext context)
 		{
 			// TODO: External providers as separate nodes
 			var query = DB.Cypher
 							.Match("(u:User { Provider: {provider}, ProviderId: {providerId}})")
 							.WithParams(new
 							{
-								provider = externalUser.Provider,
-								providerId = externalUser.ProviderId
+								provider = context.ExternalIdentity.Provider,
+								providerId = context.ExternalIdentity.ProviderId
 							})
 							.Return(u => u.As<Models.User>());
 
@@ -102,10 +101,10 @@ namespace Edgecastle.IdentityServer3.Neo4j
 			{
 				string displayName;
 
-				var name = externalUser.Claims.FirstOrDefault(x => x.Type == Constants.ClaimTypes.Name);
+				var name = context.ExternalIdentity.Claims.FirstOrDefault(x => x.Type == Constants.ClaimTypes.Name);
 				if (name == null)
 				{
-					displayName = externalUser.ProviderId;
+					displayName = context.ExternalIdentity.ProviderId;
 				}
 				else
 				{
@@ -115,10 +114,10 @@ namespace Edgecastle.IdentityServer3.Neo4j
 				user = new Models.User
 				{
 					Id = Guid.NewGuid(),
-					Provider = externalUser.Provider,
-					ProviderId = externalUser.ProviderId,
+					Provider = context.ExternalIdentity.Provider,
+					ProviderId = context.ExternalIdentity.ProviderId,
 					Username = displayName,
-					Claims = externalUser.Claims.Select(c => (Models.Claim) c) // Cast
+					Claims = context.ExternalIdentity.Claims.Select(c => (Models.Claim) c) // Cast
 				};
 
 				DB.Cypher
@@ -127,33 +126,30 @@ namespace Edgecastle.IdentityServer3.Neo4j
 					.ExecuteWithoutResults();
 			}
 
-			var result = new AuthenticateResult(user.Id.ToString(), user.Username);
-			return result;
+			context.AuthenticateResult = new AuthenticateResult(user.Id.ToString(), user.Username);
 		}
 
 		/// <summary>
-		/// 
+		/// Authenticates the user with a local account
 		/// </summary>
-		/// <param name="username"></param>
-		/// <param name="password"></param>
-		/// <param name="message"></param>
+		/// <param name="context">The context</param>
 		/// <returns></returns>
-		public async Task<AuthenticateResult> AuthenticateLocalAsync(string username, string password, SignInMessage message)
+		public async Task AuthenticateLocalAsync(LocalAuthenticationContext context)
 		{
             var usernameQuery = DB.Cypher
                             .Match("(u:User {Username:{username}})")
-                            .WithParam("username", username.ToLowerInvariant())
+                            .WithParam("username", context.UserName.ToLowerInvariant())
                             .Return(u => u.As<Models.AuthenticationInfo>());
 
             var authenticationInfo = (await usernameQuery.ResultsAsync).FirstOrDefault();
 
-            if (authenticationInfo == null || !PasswordSecurity.Verify(input: password, hash: authenticationInfo.Password))
+            if (authenticationInfo == null || !PasswordSecurity.Verify(input: context.Password, hash: authenticationInfo.Password))
             {
                 // Couldn't find user with that username and/or password
-                return new AuthenticateResult("Authentication failed.");
+                context.AuthenticateResult = new AuthenticateResult("Authentication failed.");
             }
 
-			return new AuthenticateResult(authenticationInfo.Id.ToString(), authenticationInfo.Username);
+			context.AuthenticateResult = new AuthenticateResult(authenticationInfo.Id.ToString(), authenticationInfo.Username);
         }
 
         /// <summary>
@@ -193,60 +189,68 @@ namespace Edgecastle.IdentityServer3.Neo4j
         }
 
         /// <summary>
-        /// 
+        /// Populates the context with issues claims.
         /// </summary>
-        /// <param name="subject"></param>
-        /// <param name="requestedClaimTypes"></param>
-        /// <returns></returns>
-        public async Task<IEnumerable<Claim>> GetProfileDataAsync(ClaimsPrincipal subject, IEnumerable<string> requestedClaimTypes = null)
+        /// <param name="context">The profile data request</param>
+        public async Task GetProfileDataAsync(ProfileDataRequestContext context)   // ClaimsPrincipal subject, IEnumerable<string> requestedClaimTypes = null)
 		{
 			// TODO: This is all temporary
 			var query = DB.Cypher
 							.Match("(u:User {Username: {username}})-[:HAS_CLAIM]->(c:Claim)")
-							.WithParam("username", subject.Identity.Name)
+							.WithParam("username", context.Subject.Identity.Name)
 							.Return(c => c.As<Models.Claim>());
 
 			var results = await query.ResultsAsync;
 
 			var claims = new List<Claim>{
-				new Claim(Constants.ClaimTypes.Subject, subject.Identity.Name),
+				new Claim(Constants.ClaimTypes.Subject, context.Subject.Identity.Name),
 			};
 
 			claims.AddRange(results.Select(c => (Claim) c));
-			if (requestedClaimTypes != null)
+			if (context.RequestedClaimTypes != null)
 			{
-				claims = claims.Where(x => requestedClaimTypes.Contains(x.Type)).ToList();
+				claims = claims.Where(x => context.RequestedClaimTypes.Contains(x.Type)).ToList();
 			}
 
-			return claims;
+            context.IssuedClaims = claims;
 		}
 
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <param name="subject"></param>
+		/// <param name="context"></param>
 		/// <returns></returns>
-		public Task<bool> IsActiveAsync(ClaimsPrincipal subject)
+		public Task IsActiveAsync(IsActiveContext context)
 		{
-			return Task.FromResult<bool>(true);
+            return Task.FromResult(0);
 		}
 
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <param name="message"></param>
+		/// <param name="context">The context</param>
 		/// <returns></returns>
-		public Task<AuthenticateResult> PreAuthenticateAsync(SignInMessage message)
+		public Task PreAuthenticateAsync(PreAuthenticationContext context)
 		{
-			return Task.FromResult<AuthenticateResult>(null);
+            return Task.FromResult(0);
 		}
 
+        /// <summary>
+        /// Post authentication
+        /// </summary>
+        /// <param name="context">The context</param>
+        /// <returns></returns>
+        public Task PostAuthenticateAsync(PostAuthenticationContext context)
+        {
+            return Task.FromResult(0);
+        }
+
 		/// <summary>
-		/// 
+		/// Signs out
 		/// </summary>
-		/// <param name="subject"></param>
+		/// <param name="context"></param>
 		/// <returns></returns>
-		public Task SignOutAsync(ClaimsPrincipal subject)
+		public Task SignOutAsync(SignOutContext context)
 		{
 			return Task.FromResult(0);
 		}

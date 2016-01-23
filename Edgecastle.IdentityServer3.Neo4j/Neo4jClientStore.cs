@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Thinktecture.IdentityServer.Core.Models;
-using Thinktecture.IdentityServer.Core.Services;
+using IdentityServer3.Core.Models;
+using IdentityServer3.Core.Services;
 using Edgecastle.IdentityServer3.Neo4j.Models;
 
 namespace Edgecastle.IdentityServer3.Neo4j
@@ -36,12 +36,13 @@ namespace Edgecastle.IdentityServer3.Neo4j
                     ClientName = client.ClientName,
                     ClientId = client.ClientId,
                     Flow = Flows.Implicit,
+                    AllowedScopes = client.AllowedScopes,
 
                     // TODO - Uniqueness of redirect uris
                     RedirectUris = new List<string>
-                {
-                    client.RedirectUris.FirstOrDefault()
-                }
+                    {
+                        client.RedirectUris.FirstOrDefault()
+                    }
                 };
 
                 await DB.Cypher.Create("(c:Client {newClient})")

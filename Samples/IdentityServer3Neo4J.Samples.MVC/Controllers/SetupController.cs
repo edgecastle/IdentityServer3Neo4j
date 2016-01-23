@@ -8,8 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using Thinktecture.IdentityServer.Core;
-using Thinktecture.IdentityServer.Core.Models;
+using IdentityServer3.Core;
+using IdentityServer3.Core.Models;
 using Edgecastle.IdentityServer3.Neo4j.Interfaces;
 
 namespace IdentityServer3Neo4J.Samples.MVC.Controllers
@@ -148,7 +148,7 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 					ClientName = "MVC Sample",
 					ClientId = "mvcsample",
 					Flow = Flows.Implicit,
-
+                    AllowedScopes = new List<string> { "openid", "profile", "roles" },
 					RedirectUris = new List<string>
 					{
 						"https://localhost:44300/"
