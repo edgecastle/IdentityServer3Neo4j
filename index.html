@@ -38,6 +38,10 @@
 
         <p>First, <a href="https://identityserver.github.io/Documentation/docsv2/overview/simplestOAuth.html">set up IdentityServer3</a> in your project. Brock Allen and Dominick Baier have done a great job with the documentation.</p>
 
+        <p>Next add the IdentityServer3Neo4j nuget package:</p>
+
+        <pre>Install-Package Edgecastle.IdentityServer3Neo4j</pre>
+
         <p>Then update the app.useIdentityServer() method to use the Neo4j factory instead of the default, in-memory one:</p>
 
         <pre>app.Map("/identity", idsrvApp =>
