@@ -40,16 +40,17 @@
 
         <p>Then update the app.useIdentityServer() method to use the Neo4j factory instead of the default, in-memory one:</p>
 
-        <pre>           app.Map("/identity", idsrvApp =>
-            {
-				idsrvApp.UseIdentityServer(new IdentityServerOptions
-				{
-					SiteName = "Your site",
-					SigningCertificate = LoadCertificate(),
-					// Reference the Neo4j version of the services factory
-					Factory = Neo4jServiceFactory.Create()
-				});
-			});</pre>
+        <pre>app.Map("/identity", idsrvApp =>
+{
+    idsrvApp.UseIdentityServer(new IdentityServerOptions
+	{
+	    SiteName = "Your site",
+        SigningCertificate = LoadCertificate(),
+			
+    	// Reference the Neo4j version of the services factory
+		Factory = Neo4jServiceFactory.Create()
+	});
+});</pre>
 
     </section>
 
