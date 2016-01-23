@@ -15,6 +15,9 @@ public void Configuration(IAppBuilder app)
     };
 
     app.UseIdentityServer(options);
+
+	...
 }
 ```
 
+For more information, release notes, etc. view [http://edgecastle.github.io/IdentityServer3Neo4j/](http://edgecastle.github.io/IdentityServer3Neo4j/)
