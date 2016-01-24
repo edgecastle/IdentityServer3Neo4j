@@ -35,7 +35,7 @@ namespace IdentityServer3Neo4J.Samples.MVC
 					SigningCertificate = LoadCertificate(),
 
 					// Reference the Neo4j version of the services factory
-					Factory = Neo4jServiceFactory.Create().Result
+					Factory = Neo4jServiceFactory.Create()
 				});
 			});
 

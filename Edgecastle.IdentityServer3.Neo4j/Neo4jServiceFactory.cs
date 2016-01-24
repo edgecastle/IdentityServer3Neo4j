@@ -18,7 +18,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 		/// Creates a new instance of a Neo4j-backed service factory
 		/// </summary>
 		/// <returns>A Neo4j-backed service factory</returns>
-		public static async Task<IdentityServerServiceFactory> Create()
+		public static IdentityServerServiceFactory Create()
 		{
 			IdentityServerServiceFactory factory = new IdentityServerServiceFactory();
 
@@ -26,29 +26,29 @@ namespace Edgecastle.IdentityServer3.Neo4j
 			factory.ClientStore = new Registration<IClientStore>(typeof(Neo4jClientStore));
 			factory.ScopeStore = new Registration<IScopeStore>(typeof(Neo4jScopeStore));
 
-            await ConfigureDB();
+            ConfigureDB();
 
 			return factory;
 		}
 
-        private static async Task ConfigureDB()
+        private static void ConfigureDB()
         {
             var DB = Neo4jProvider.GetClient();
 
             try
             {
-                await DB.Cypher
+                DB.Cypher
                         .CreateUniqueConstraint("client:Client", "client.ClientId")
-                        .ExecuteWithoutResultsAsync();
-                await DB.Cypher
+                        .ExecuteWithoutResults();
+                DB.Cypher
                     .CreateUniqueConstraint("user:User", "user.Username")
-                    .ExecuteWithoutResultsAsync();
-                await DB.Cypher
+                    .ExecuteWithoutResults();
+                DB.Cypher
                     .CreateUniqueConstraint("scope:Scope", "scope.Name")
-                    .ExecuteWithoutResultsAsync();
-                await DB.Cypher
+                    .ExecuteWithoutResults();
+                DB.Cypher
                     .CreateUniqueConstraint("scopeClaim:ScopeClaim", "scopeClaim.Name")
-                    .ExecuteWithoutResultsAsync();
+                    .ExecuteWithoutResults();
             }
             catch (Exception ex)
             {
