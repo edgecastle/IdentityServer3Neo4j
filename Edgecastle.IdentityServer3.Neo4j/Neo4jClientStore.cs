@@ -35,21 +35,44 @@ namespace Edgecastle.IdentityServer3.Neo4j
                     Enabled = client.Enabled,
                     ClientName = client.ClientName,
                     ClientId = client.ClientId,
-                    Flow = Flows.Implicit,
+                    Flow = client.Flow,
                     AllowedScopes = client.AllowedScopes,
-
-                    // TODO - Uniqueness of redirect uris
-                    RedirectUris = new List<string>
-                    {
-                        client.RedirectUris.FirstOrDefault()
-                    }
+                    PostLogoutRedirectUris = client.PostLogoutRedirectUris,
+                    RedirectUris = client.RedirectUris,
+                    AllowAccessToAllScopes = client.AllowAccessToAllScopes
                 };
 
-                await DB.Cypher.Create("(c:Client {newClient})")
-                        .WithParam("newClient", newClient)
-                        .ExecuteWithoutResultsAsync();
+                if (client.ClientSecrets != null && client.ClientSecrets.Count != 0)
+                {
+                    // Prepare the create string using the configurable labels from Configuration
+                    string createString = string.Format("(c:{0} {{newClient}})-[:{1}]->(cs:{2} {{secret}})",
+                                                Configuration.Global.ClientLabel,
+                                                Configuration.Global.HasSecretRelName,
+                                                Configuration.Global.HasSecretRelName);
+
+
+                    // TODO: Merge
+
+                    await DB.Cypher.CreateUnique(createString)
+                            .WithParams(new
+                            {
+                                newClient = newClient,
+                                secret = client.ClientSecrets.First()
+                            })
+                            .ExecuteWithoutResultsAsync();
+                }
+                else
+                {
+                    // Prepare the create string using the configurable labels from Configuration
+                    string createString = string.Format("(c:{0} {{newClient}})",
+                                                Configuration.Global.ClientLabel);
+                    await DB.Cypher.Create("(c:Client {newClient})")
+                            .WithParam("newClient", newClient)
+                            .ExecuteWithoutResultsAsync();
+                }
+                
             }
-            catch (Neo4jClient.NeoException ex)
+            catch (Exception ex)
             {
                 // TODO: Log
                 return new ClientAdminResult(ex.Message);
@@ -67,14 +90,30 @@ namespace Edgecastle.IdentityServer3.Neo4j
 		{
 			var DB = Neo4jProvider.GetClient();
 
+            // Prepare the query strings using the configurable labels from Configuration
+            string matchString = string.Format("(c:{0} {{ClientId:{{clientId}}}})",
+                                        Configuration.Global.ClientLabel);
+
+            string optionalMatchString = string.Format("(c)-[:{0}]->(cs:{1})",
+                                        Configuration.Global.HasSecretRelName,
+                                        Configuration.Global.ClientSecretLabel);
+
 			var query = DB.Cypher
-							.Match("(c:Client {ClientId:{clientId}})")
+							.Match(matchString)
+                            .OptionalMatch(optionalMatchString)
 							.WithParam("clientId", clientId)
-							.Return(c => c.As<Client>());
+							.Return((c, cs) => new
+                            {
+                                Client = c.As<Client>(),
+                                Secrets = cs.CollectAs<Secret>()
+                            });
 
 			var results = await query.ResultsAsync;
 
-			return results.FirstOrDefault();
+            Client client = results.Single().Client;
+            client.ClientSecrets = results.Single().Secrets.Select(s => s.Data).ToList();
+
+            return client;
 		}
 	}
 }

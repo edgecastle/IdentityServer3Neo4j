@@ -91,6 +91,61 @@ namespace Edgecastle.Data.Neo4j
 			}
 		}
 
+        /// <summary>
+        /// The label applied to scopes in the graph database
+        /// </summary>
+        public string ScopeLabel
+        {
+            get
+            {
+                return Settings["ScopeLabel"] ?? "Scope";
+            }
+        }
+
+        /// <summary>
+        /// The label applied to Client Scope nodes in the graph database
+        /// </summary>
+        public string ClientScopeLabel
+        {
+            get
+            {
+                return Settings["ClientScopeLabel"] ?? "ClientScope";
+            }
+        }
+
+        /// <summary>
+        /// The label applied to client secrets
+        /// </summary>
+        public string ClientSecretLabel
+        {
+            get
+            {
+                return Settings["ClientSecretLabel"] ?? "ClientSecret";
+            }
+        }
+
+        /// <summary>
+        /// The label applied to Clients in the graph database
+        /// </summary>
+        public string ClientLabel
+        {
+            get
+            {
+                return Settings["ClientLabel"] ?? "Client";
+            }
+        }
+
+        /// <summary>
+        /// The name of the relationship between a Client and a ClientSecret
+        /// </summary>
+        public string HasSecretRelName
+        {
+            get
+            {
+                return Settings["HasSecretRelName"] ?? "HAS_SECRET";
+            }
+        }
+
 		/// <summary>
 		/// Global singleton for accessing common graph configuration settings
 		/// </summary>

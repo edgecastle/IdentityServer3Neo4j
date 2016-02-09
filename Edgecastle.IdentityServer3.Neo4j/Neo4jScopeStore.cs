@@ -32,6 +32,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
 			var scopes = new List<Scope>();
 
+            // TODO: Optional match on scope claim?
 			var query = DB.Cypher
 							.Match("(s:Scope)-[:HAS_CLAIM]->(sc:ScopeClaim)")
 							.Return((s, sc) => new

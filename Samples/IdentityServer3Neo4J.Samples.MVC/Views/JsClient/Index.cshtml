@@ -1,0 +1,33 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<div class="container main-container">
+    <div class="row">
+        <div class="col-xs-12">
+            <ul class="list-inline list-unstyled requests">
+                <li><a href="@Url.Action("Popup")" class="btn btn-primary">Home</a></li>
+                <li><button type="button" class="btn btn-default js-login">Login</button></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">ID Token Contents</div>
+                <div class="panel-body">
+                    <pre class="js-id-token"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/bower_components/jquery/dist/jquery.js"></script>
+<script src="~/bower_components/bootstrap/dist/js/bootstrap.js"></script>
+<script src="~/bower_components/oidc-token-manager/dist/oidc-token-manager.js"></script>
+<script src="~/Scripts/jsClient.js"></script>

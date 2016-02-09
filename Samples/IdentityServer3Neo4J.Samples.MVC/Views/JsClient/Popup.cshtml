@@ -1,0 +1,10 @@
+﻿
+@{
+    ViewBag.Title = "Popup";
+}
+
+<script src="~/bower_components/oidc-token-manager/dist/oidc-token-manager.js"></script>
+<script>
+    var manager = new OidcTokenManager();
+    manager.processTokenPopup();
+</script>

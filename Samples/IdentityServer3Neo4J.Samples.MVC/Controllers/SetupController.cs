@@ -1,16 +1,13 @@
-﻿using Edgecastle.Data.Neo4j;
-using Edgecastle.IdentityServer3.Neo4j;
+﻿using Edgecastle.IdentityServer3.Neo4j;
+using Edgecastle.IdentityServer3.Neo4j.Interfaces;
 using Edgecastle.IdentityServer3.Neo4j.Models;
+using IdentityServer3.Core;
+using IdentityServer3.Core.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using IdentityServer3.Core;
-using IdentityServer3.Core.Models;
-using Edgecastle.IdentityServer3.Neo4j.Interfaces;
 
 namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 {
@@ -27,11 +24,14 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 
             // Create a test user
 			Log("Creating user 'bob' with password 'secret'");
-			User user = await CreateTestUser();
+			UserAdminResult createUserResult = await CreateTestUser();
 
-            // Adding claims to user
-			Log("Creating Claims and adding to user 'bob'");
-			await AddClaimsToUserAsync(user);
+            if (createUserResult.Success)
+            {
+                // Adding claims to user
+                Log("Creating Claims and adding to user 'bob'");
+                await AddClaimsToUserAsync(createUserResult.User);
+            }
 
             // Creating 'roles' scope
 			Log("Create 'roles' identity scope");
@@ -75,25 +75,55 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
             }
 		}
 
-		private async Task<User> CreateTestUser()
+        private async Task CreateWebApiScope()
+        {
+            Log("Creating webapi resource scope.");
+
+            Edgecastle.IdentityServer3.Neo4j.Models.Scope newScope = new Edgecastle.IdentityServer3.Neo4j.Models.Scope
+            {
+                IsEnabled = true,
+                Name = "webapi",
+                Type = ScopeType.Resource,
+                Description = "Access to sample web API"
+            };
+
+            IScopeAdminService service = new Neo4jScopeStore();
+            ScopeAdminResult scopeResult = await service.CreateScope(newScope);
+            if (scopeResult.Success)
+            {
+                Log("Created web api resource scope.");                
+            }
+        }
+
+		private async Task<UserAdminResult> CreateTestUser()
 		{
-			try
+            UserAdminResult result = null;
+
+            try
 			{
                 IUserAdminService service = new Neo4jUsersService();
-                UserAdminResult result = await service.CreateUser(
+                result = await service.CreateUser(
                     username: "bob",
                     password: "secret",
                     email: "bob@smithventures.com"
                 );
 
-                return result.Success ? result.User : null;
+                if (result.Success)
+                {
+                    Log("Successfully created user.");
+                }
+                else
+                {
+                    Log(string.Format("Error: {0}", result.ErrorMessage), true);
+                }
+
 			}
 			catch (Exception ex)
 			{
 				LogException(ex);
 			}
 
-            return null;
+            return result;
 		}
 
 		private async Task AddClaimsToUserAsync(User user)
@@ -140,25 +170,78 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 
 		private async Task CreateClientsAsync()
 		{
-			try
-			{
-				var newClient = new Client
-				{
-					Enabled = true,
-					ClientName = "MVC Sample",
-					ClientId = "mvcsample",
-					Flow = Flows.Implicit,
-                    AllowedScopes = new List<string> { "openid", "profile", "roles" },
-					RedirectUris = new List<string>
-					{
-						"https://localhost:44300/"
-					}
-				};
+            IClientAdminService service = new Neo4jClientStore();
+            ClientAdminResult result = null;
 
-                IClientAdminService service = new Neo4jClientStore();
-                var result = await service.CreateClient(newClient);
+            try
+            {
+                Log("Creating MVC Application client scope.");
+
+
+
+                var mvcClient = new Client
+                {
+                    Enabled = true,
+                    ClientName = "MVC Sample",
+                    ClientId = "mvcsample",
+                    Flow = Flows.Implicit,
+                    AllowedScopes = new List<string>
+                    {
+                        "openid",
+                        "profile",
+                        "roles",
+                        "webapi"
+                    },
+                    RedirectUris = new List<string>
+                    {
+                        "https://localhost:44300/"
+                    },
+                    PostLogoutRedirectUris = new List<string>
+                    {
+                        "https://localhost:44300/"
+                    }
+                };
+
+                result = await service.CreateClient(mvcClient);
 
                 if (result.Success)
+                {
+                    Log("Done");
+                }
+                else
+                {
+                    Log("ERROR: " + result.ErrorMessage, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+
+            try
+            { 
+                Log("Creating WebAPI Sample client scope.");
+
+                var webapiClient = new Client
+                {
+                    ClientName = "WebApi Sample",
+                    ClientId = "mvc_service",
+                    Flow = Flows.ClientCredentials,
+
+                    ClientSecrets = new List<Secret>
+                    {
+                        new Secret("secret".Sha256())
+                    },
+
+                    AllowedScopes = new List<string>
+                    {
+                        "webapi"
+                    }
+                };
+
+                result = await service.CreateClient(webapiClient);
+
+                if(result.Success)
                 {
                     Log("Done");
                 }
@@ -171,22 +254,74 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 			{
 				LogException(ex);
 			}
-		}
+
+            try
+            {
+                Log("Creating JS Client scope.");
+
+                var jsClient = new Client
+                {
+                    ClientName = "JS Client",
+                    ClientId = "js",
+                    Flow = Flows.Implicit,
+
+                    RedirectUris = new List<string>
+                    {
+                        "https://localhost:44300/JsClient/Popup"
+                    },
+
+                    AllowedCorsOrigins = new List<string>
+                    {
+                        "https://localhost:44300"
+                    },
+
+                    AllowAccessToAllScopes = true
+                };
+
+                result = await service.CreateClient(jsClient);
+
+                if (result.Success)
+                {
+                    Log("Done");
+                }
+                else
+                {
+                    Log("ERROR: " + result.ErrorMessage, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
 
 		private void Log(string message, bool IsError = false)
 		{
-			Response.Write("<p" + (IsError ? " style='color:red'>" : ">") + message + "</p>");
+			Response.Write("<p" + (IsError ? " style='color:red'>" : ">") + HttpUtility.HtmlEncode(message) + "</p>");
 			Response.Flush();
 		}
 
 		private void LogException(Exception e)
 		{
 			Exception ex = e;
-			while(ex != null)
-			{
-				this.Log(ex.Message, true);
-				ex = ex.InnerException;
-			}
+            Log(ex.Message, true);
+
+            if (ex is AggregateException)
+            {
+                AggregateException aggregateException = ex as AggregateException;
+                foreach (Exception aggregateInnerEx in aggregateException.InnerExceptions)
+                {
+                    LogException(aggregateInnerEx);
+                }
+            }
+            else
+            {
+                while (ex != null)
+                {
+                    this.Log(ex.Message, true);
+                    ex = ex.InnerException;
+                }
+            }
 		}
     }
 }

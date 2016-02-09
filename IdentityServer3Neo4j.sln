@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Edgecastle.IdentityServer3.Neo4j", "Edgecastle.IdentityServer3.Neo4j\Edgecastle.IdentityServer3.Neo4j.csproj", "{8E4C5161-CA0E-445F-8BB9-AFD20D9528F4}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServer3Neo4J.Samples.MVC", "Samples\IdentityServer3Neo4J.Samples.MVC\IdentityServer3Neo4J.Samples.MVC.csproj", "{2AE0DF33-BFBB-4157-85AF-2AC92FFCF5B3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Edgecastle.IdentityServer3.Neo4j.Tests", "Edgecastle.IdentityServer3.Neo4j.Tests\Edgecastle.IdentityServer3.Neo4j.Tests.csproj", "{AA04A60A-3A33-4D24-A9F2-8E3CD4A769BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServer3.Neo4J.Samples.WebApi", "Samples\IdentityServer3.Neo4J.Samples.WebApi\IdentityServer3.Neo4J.Samples.WebApi.csproj", "{78244E6D-5502-4848-8EF0-1C4348C7B81F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,11 +31,16 @@ Global
 		{AA04A60A-3A33-4D24-A9F2-8E3CD4A769BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA04A60A-3A33-4D24-A9F2-8E3CD4A769BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA04A60A-3A33-4D24-A9F2-8E3CD4A769BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78244E6D-5502-4848-8EF0-1C4348C7B81F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78244E6D-5502-4848-8EF0-1C4348C7B81F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78244E6D-5502-4848-8EF0-1C4348C7B81F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78244E6D-5502-4848-8EF0-1C4348C7B81F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{2AE0DF33-BFBB-4157-85AF-2AC92FFCF5B3} = {A456BDC8-1FB2-4AD1-BF43-E06A291315D1}
+		{78244E6D-5502-4848-8EF0-1C4348C7B81F} = {A456BDC8-1FB2-4AD1-BF43-E06A291315D1}
 	EndGlobalSection
 EndGlobal
