@@ -34,11 +34,12 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
             // TODO: Optional match on scope claim?
 			var query = DB.Cypher
-							.Match("(s:Scope)-[:HAS_CLAIM]->(sc:ScopeClaim)")
+							.Match("(s:Scope)")
+                            .OptionalMatch("(s)-[:HAS_CLAIM]->(sc:ScopeClaim)")
 							.Return((s, sc) => new
 							 {
 								 Scope = s.As<Models.Scope>(),
-								 ScopeClaim = sc.As<ScopeClaim>()
+								 ScopeClaims = sc.CollectAs<ScopeClaim>()
 							 });
 
 			// Support filtering
@@ -51,9 +52,9 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
 			Logger.DebugFormat("GetAllScopes, found {0} scopes in the DB", results.Count());
 
-			if (results.Count() != 0)
+			if (results.Any())
 			{
-				scopes.AddRange(results.Select(s => s.Scope.ToIdentityServerScope(s.ScopeClaim)));
+                scopes.AddRange(results.Select(s => s.Scope.ToIdentityServerScope(s.ScopeClaims.Select(sc => sc.Data).ToList())));
 			}
 
 			scopes.AddRange(StandardScopes.All);

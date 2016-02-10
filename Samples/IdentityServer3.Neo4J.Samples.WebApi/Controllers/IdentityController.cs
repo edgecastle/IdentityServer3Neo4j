@@ -4,7 +4,7 @@ using System.Web.Http;
 
 namespace IdentityServer3.Neo4J.Samples.WebApi.Controllers
 {
-    public class HomeController : ApiController
+    public class IdentityController : ApiController
     {
         [Route("identity")]
         [Authorize]

@@ -19,7 +19,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
         /// <summary>
         /// Creates a client
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="client">The client to create</param>
         /// <returns></returns>
         public async Task<ClientAdminResult> CreateClient(Client client)
         {
@@ -44,20 +44,16 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
                 if (client.ClientSecrets != null && client.ClientSecrets.Count != 0)
                 {
-                    // Prepare the create string using the configurable labels from Configuration
-                    string createString = string.Format("(c:{0} {{newClient}})-[:{1}]->(cs:{2} {{secret}})",
+                    string createClientString = string.Format("(c:{0} {{newClient}})-[:{1}]->(cs:{2} {{secrets}})",                                                
                                                 Configuration.Global.ClientLabel,
                                                 Configuration.Global.HasSecretRelName,
-                                                Configuration.Global.HasSecretRelName);
+                                                Configuration.Global.ClientSecretLabel);
 
-
-                    // TODO: Merge
-
-                    await DB.Cypher.CreateUnique(createString)
+                    await DB.Cypher.Create(createClientString)
                             .WithParams(new
                             {
                                 newClient = newClient,
-                                secret = client.ClientSecrets.First()
+                                secrets = client.ClientSecrets
                             })
                             .ExecuteWithoutResultsAsync();
                 }
@@ -88,6 +84,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
         /// <returns>The client, if found, otherwise null.</returns>
         public async Task<Client> FindClientByIdAsync(string clientId)
 		{
+            Client client = null;
 			var DB = Neo4jProvider.GetClient();
 
             // Prepare the query strings using the configurable labels from Configuration
@@ -110,8 +107,15 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
 			var results = await query.ResultsAsync;
 
-            Client client = results.Single().Client;
-            client.ClientSecrets = results.Single().Secrets.Select(s => s.Data).ToList();
+            if (results.Any())
+            {
+                client = results.Single().Client;
+
+                if (results.Single().Secrets.Any())
+                {
+                    client.ClientSecrets = results.Single().Secrets.Select(s => s.Data).ToList();
+                }
+            }
 
             return client;
 		}

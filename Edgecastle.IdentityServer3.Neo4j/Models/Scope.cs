@@ -15,13 +15,13 @@ namespace Edgecastle.IdentityServer3.Neo4j.Models
 		/// <summary>
 		/// Converts a Neo4j-serializable Scope to the IdentityServer3 Scope object
 		/// </summary>
-		/// <param name="scopeClaim">The scope claim to add</param>
+		/// <param name="scopeClaims">A list of any scope claims to add</param>
 		/// <returns>An IdentityServer3 scope representative of the Neo4j-serializable scope object.</returns>
-		internal IdentityServer.Scope ToIdentityServerScope(IdentityServer.ScopeClaim scopeClaim)
+		internal IdentityServer.Scope ToIdentityServerScope(List<IdentityServer.ScopeClaim> scopeClaims)
 		{
 			var idSrvScope = new IdentityServer.Scope
 			{
-				Claims = new List<IdentityServer.ScopeClaim> { scopeClaim },
+				Claims = scopeClaims,
 				ClaimsRule = this.ClaimsRule,
 				Description = this.Description,
 				DisplayName = this.DisplayName,

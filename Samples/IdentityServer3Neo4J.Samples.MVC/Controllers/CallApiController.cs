@@ -37,7 +37,7 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
             var client = new HttpClient();
             client.SetBearerToken(token);
 
-            var json = await client.GetStringAsync("https://localhost:44300/identity");
+            var json = await client.GetStringAsync("https://localhost:44301/identity");
             return JArray.Parse(json).ToString();
         }
     }

@@ -33,30 +33,42 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
                 await AddClaimsToUserAsync(createUserResult.User);
             }
 
-            // Creating 'roles' scope
-			Log("Create 'roles' identity scope");
-			await CreateRolesScope();
+            // Creating scopes
+			await CreateScopes();
 
 			return Content("-END-");
 		}
 
-		private async Task CreateRolesScope()
+		private async Task CreateScopes()
 		{
-			Edgecastle.IdentityServer3.Neo4j.Models.Scope newScope = new Edgecastle.IdentityServer3.Neo4j.Models.Scope
+			Edgecastle.IdentityServer3.Neo4j.Models.Scope rolesScope = new Edgecastle.IdentityServer3.Neo4j.Models.Scope
 			{
 				IsEnabled = true,
 				Name = "roles",
 				Type = ScopeType.Identity
 			};
 
-            IScopeAdminService service = new Neo4jScopeStore();
-            ScopeAdminResult scopeResult = await service.CreateScope(newScope);
-            if (scopeResult.Success)
+            Edgecastle.IdentityServer3.Neo4j.Models.Scope webapiScope = new Edgecastle.IdentityServer3.Neo4j.Models.Scope
             {
-                Log("Created scope.");
+                IsEnabled = true,
+                DisplayName = "WebApi scope",
+                Name = "webapi",
+                Description = "Access to the sample webapi",
+                Type = ScopeType.Resource
+            };
 
-                try
+
+            IScopeAdminService service = new Neo4jScopeStore();
+            ScopeAdminResult scopeResult;
+
+            try
+            {
+                Log("Create 'roles' identity scope");
+                scopeResult = await service.CreateScope(rolesScope);
+                if (scopeResult.Success)
                 {
+                    Log("Created scope.");
+
                     var scopeClaims = new[]
                     {
                         new ScopeClaim("role")
@@ -65,15 +77,29 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
                     foreach (var scopeClaim in scopeClaims)
                     {
                         Log("Adding scope claim '" + scopeClaim.Name + "'");
-                        ScopeAdminResult result = await service.AddScopeClaim(newScope.Name, scopeClaim);
+                        ScopeAdminResult result = await service.AddScopeClaim(rolesScope.Name, scopeClaim);
                     }
                 }
-                catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+
+            Log("Create 'webapi' scope for sample webapi project");
+            try
+            {
+                scopeResult = await service.CreateScope(webapiScope);
+                if (scopeResult.Success)
                 {
-                    LogException(ex);
+                    Log("Created scope.");
                 }
             }
-		}
+            catch(Exception ex)
+            {
+                LogException(ex);
+            }
+        }
 
         private async Task CreateWebApiScope()
         {
