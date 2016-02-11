@@ -113,7 +113,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
                 if (results.Single().Secrets.Any())
                 {
-                    client.ClientSecrets = results.Single().Secrets.Select(s => s.Data).ToList();
+                    client.ClientSecrets = results.Single().Secrets.ToList();
                 }
             }
 

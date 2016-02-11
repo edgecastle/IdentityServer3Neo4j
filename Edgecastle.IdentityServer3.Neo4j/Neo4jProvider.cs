@@ -26,10 +26,15 @@ namespace Edgecastle.Data.Neo4j
 				throw new ApplicationException("No connection string provided for Neo4j instance. Please set the 'Neo4jConnectionString' appsetting.");
 			}
 
-			GraphClient client = new GraphClient(uri);
+            GraphClient client = new GraphClient(uri);
 			client.Connect();
 
 			return client;
 		}
-	}
+
+        private static void ThrowMissingOrInvalidCredentials()
+        {
+            throw new ApplicationException("No credentials found in connection string provided for Neo4j. Use the format http://username:password@localhost:7474/db/data");
+        }
+    }
 }

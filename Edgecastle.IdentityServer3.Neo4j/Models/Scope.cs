@@ -40,7 +40,7 @@ namespace Edgecastle.IdentityServer3.Neo4j.Models
 		/// <summary>
 		/// List of user claims that should be included in the identity (identity scope) or access token (resource scope).
 		/// </summary>
-		public IdentityServer.ScopeClaim[] Claims { get; set; }
+		public IEnumerable<IdentityServer.ScopeClaim> Claims { get; set; }
 
 		/// <summary>
 		/// Rule for determining which claims should be included in the token (this is implementation specific)

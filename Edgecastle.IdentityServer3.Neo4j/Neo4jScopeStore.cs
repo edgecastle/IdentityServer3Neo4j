@@ -54,7 +54,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
 			if (results.Any())
 			{
-                scopes.AddRange(results.Select(s => s.Scope.ToIdentityServerScope(s.ScopeClaims.Select(sc => sc.Data).ToList())));
+                scopes.AddRange(results.Select(s => s.Scope.ToIdentityServerScope(s.ScopeClaims.ToList())));
 			}
 
 			scopes.AddRange(StandardScopes.All);
@@ -140,7 +140,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
                 // TODO: Null check
                 Models.Scope scope = results.First().Scope;
                 // TODO: Don't break the Laws of Demeter
-                scope.Claims = results.First().Claims.Select(node => node.Data).ToArray();
+                scope.Claims = results.First().Claims.ToArray();
 
                 return new Models.ScopeAdminResult(scope);
             }

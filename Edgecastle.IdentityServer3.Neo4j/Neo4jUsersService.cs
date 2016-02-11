@@ -69,7 +69,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
                                 .ResultsAsync;
 
                 Models.User user = results.First().User;
-                user.Claims = results.First().Claims.Select(cl => cl.Data);
+                user.Claims = results.First().Claims;
                 return new Models.UserAdminResult(user);
             }
             catch (NeoException ex)
