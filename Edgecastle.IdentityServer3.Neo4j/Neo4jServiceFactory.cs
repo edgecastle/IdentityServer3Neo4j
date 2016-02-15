@@ -37,17 +37,24 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
             try
             {
+                string clientConstraintIdentity = string.Format("client:{0}", Configuration.Global.ClientLabel);
                 DB.Cypher
-                        .CreateUniqueConstraint("client:Client", "client.ClientId")
+                        .CreateUniqueConstraint(clientConstraintIdentity, "client.ClientId")
                         .ExecuteWithoutResults();
+
+                string userConstraintIdentity = string.Format("user:{0}", Configuration.Global.UserLabel);
                 DB.Cypher
-                    .CreateUniqueConstraint("user:User", "user.Username")
+                    .CreateUniqueConstraint(userConstraintIdentity, "user.Username")
                     .ExecuteWithoutResults();
+
+                string scopeConstraintIdentity = string.Format("scope:{0}", Configuration.Global.ScopeLabel);
                 DB.Cypher
-                    .CreateUniqueConstraint("scope:Scope", "scope.Name")
+                    .CreateUniqueConstraint(scopeConstraintIdentity, "scope.Name")
                     .ExecuteWithoutResults();
+
+                string scopeClaimConstraintIdentity = string.Format("scopeClaim:{0}", Configuration.Global.ScopeClaimLabel);
                 DB.Cypher
-                    .CreateUniqueConstraint("scopeClaim:ScopeClaim", "scopeClaim.Name")
+                    .CreateUniqueConstraint(scopeClaimConstraintIdentity, "scopeClaim.Name")
                     .ExecuteWithoutResults();
             }
             catch (Exception ex)

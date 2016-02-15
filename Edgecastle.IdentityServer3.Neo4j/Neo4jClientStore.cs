@@ -62,7 +62,8 @@ namespace Edgecastle.IdentityServer3.Neo4j
                     // Prepare the create string using the configurable labels from Configuration
                     string createString = string.Format("(c:{0} {{newClient}})",
                                                 Configuration.Global.ClientLabel);
-                    await DB.Cypher.Create("(c:Client {newClient})")
+
+                    await DB.Cypher.Create(createString)
                             .WithParam("newClient", newClient)
                             .ExecuteWithoutResultsAsync();
                 }

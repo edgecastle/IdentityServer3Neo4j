@@ -57,6 +57,17 @@ namespace Edgecastle.Data.Neo4j
 				return Settings["UserLabel"] ?? "User";
 			}
 		}
+        
+        /// <summary>
+        /// The label applied to the Claim objects (nodes) in the graph database
+        /// </summary>
+        public string ClaimLabel
+        {
+            get
+            {
+                return Settings["ClaimLabel"] ?? "Claim";
+            }
+        }
 
 		/// <summary>
 		/// The label applied to External Login objects (nodes) in the graph database
@@ -103,6 +114,17 @@ namespace Edgecastle.Data.Neo4j
         }
 
         /// <summary>
+        /// The label applied to scope claims in the graph database
+        /// </summary>
+        public string ScopeClaimLabel
+        {
+            get
+            {
+                return Settings["ScopeClaimLabel"] ?? "ScopeClaim";
+            }
+        }
+
+        /// <summary>
         /// The label applied to Client Scope nodes in the graph database
         /// </summary>
         public string ClientScopeLabel
@@ -132,6 +154,17 @@ namespace Edgecastle.Data.Neo4j
             get
             {
                 return Settings["ClientLabel"] ?? "Client";
+            }
+        }
+
+        /// <summary>
+        /// The name of the relationship between a subject and a claim
+        /// </summary>
+        public string HasClaimRelName
+        {
+            get
+            {
+                return Settings["HasClaimRelName"] ?? "HAS_CLAIM";
             }
         }
 

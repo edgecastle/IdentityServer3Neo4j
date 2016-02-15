@@ -57,9 +57,14 @@ namespace Edgecastle.IdentityServer3.Neo4j
         {
             try
             {
-                var results  = await DB.Cypher.Match("(u:User {Id: {id}})")
+                string matchString = string.Format("(u:{0} {{Id: {{id}}}})", Configuration.Global.UserLabel);
+                string createUniqueString = string.Format("(u)-[:{0}]->(c:{1} {{claim}})",
+                                                    Configuration.Global.HasClaimRelName,
+                                                    Configuration.Global.ClaimLabel);
+
+                var results  = await DB.Cypher.Match(matchString)
                                 .WithParam("id", userId)
-                                .CreateUnique("(u)-[:HAS_CLAIM]->(c:Claim {claim})")
+                                .CreateUnique(createUniqueString)
                                 .WithParam("claim", claim)
                                 .Return((u,c) => new
                                 {
@@ -85,9 +90,12 @@ namespace Edgecastle.IdentityServer3.Neo4j
         /// <returns></returns>
         public async Task AuthenticateExternalAsync(ExternalAuthenticationContext context)
 		{
+            string matchString = string.Format("(u:{0} {{Provider: {{provider}}, ProviderId: {{providerId}}}})",
+                                                Configuration.Global.UserLabel);
+
 			// TODO: External providers as separate nodes
 			var query = DB.Cypher
-							.Match("(u:User { Provider: {provider}, ProviderId: {providerId}})")
+							.Match(matchString)
 							.WithParams(new
 							{
 								provider = context.ExternalIdentity.Provider,
@@ -120,8 +128,11 @@ namespace Edgecastle.IdentityServer3.Neo4j
 					Claims = context.ExternalIdentity.Claims.Select(c => (Models.Claim) c) // Cast
 				};
 
+                string createUniqueString = string.Format("(newUser:{0} {{user}})",
+                                                    Configuration.Global.UserLabel);
+
 				DB.Cypher
-					.CreateUnique("(newUser:User {user})")
+					.CreateUnique(createUniqueString)
 					.WithParam("user", user)
 					.ExecuteWithoutResults();
 			}
@@ -136,8 +147,11 @@ namespace Edgecastle.IdentityServer3.Neo4j
 		/// <returns></returns>
 		public async Task AuthenticateLocalAsync(LocalAuthenticationContext context)
 		{
+            string matchString = string.Format("(u:{0} {{Username:{{username}}}})",
+                                                Configuration.Global.UserLabel);
+
             var usernameQuery = DB.Cypher
-                            .Match("(u:User {Username:{username}})")
+                            .Match(matchString)
                             .WithParam("username", context.UserName.ToLowerInvariant())
                             .Return(u => u.As<Models.AuthenticationInfo>());
 
@@ -164,8 +178,11 @@ namespace Edgecastle.IdentityServer3.Neo4j
             // Normalisation
             username = username.ToLowerInvariant();
 
+            string matchString = string.Format("(existing:{0} {{Username: {{username}}}})",
+                                                    Configuration.Global.UserLabel);
+
             var existingUser = await DB.Cypher
-                                    .Match("(existing:User {Username: {username}})")
+                                    .Match(matchString)
                                     .WithParam("username", username)
                                     .Return(existing => existing.As<Models.User>())
                                     .ResultsAsync;
@@ -181,7 +198,11 @@ namespace Edgecastle.IdentityServer3.Neo4j
                 Password = PasswordSecurity.Hash(password),
                 Id = Guid.NewGuid()
             };
-            await DB.Cypher.Create("(u:User {newUser})")
+
+            string createUserString = string.Format("(u:{0} {{newUser}})",
+                                            Configuration.Global.UserLabel);
+
+            await DB.Cypher.Create(createUserString)
                     .WithParam("newUser", newUser)
                     .ExecuteWithoutResultsAsync();
 
@@ -194,9 +215,14 @@ namespace Edgecastle.IdentityServer3.Neo4j
         /// <param name="context">The profile data request</param>
         public async Task GetProfileDataAsync(ProfileDataRequestContext context)   // ClaimsPrincipal subject, IEnumerable<string> requestedClaimTypes = null)
 		{
+            string matchString = string.Format("(u:{0} {{Username: {{username}}}})-[:{1}]->(c:{2})",
+                                                Configuration.Global.UserLabel,
+                                                Configuration.Global.HasClaimRelName,
+                                                Configuration.Global.ClaimLabel);
+
 			// TODO: This is all temporary
 			var query = DB.Cypher
-							.Match("(u:User {Username: {username}})-[:HAS_CLAIM]->(c:Claim)")
+							.Match(matchString)
 							.WithParam("username", context.Subject.Identity.Name)
 							.Return(c => c.As<Models.Claim>());
 

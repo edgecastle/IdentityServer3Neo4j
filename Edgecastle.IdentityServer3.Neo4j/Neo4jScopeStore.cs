@@ -31,11 +31,15 @@ namespace Edgecastle.IdentityServer3.Neo4j
 			Logger.DebugFormat("GetAllScopes, whereClause = {0}", whereClause.ToString());
 
 			var scopes = new List<Scope>();
+            string matchScopeString = string.Format("(s:{0})",
+                                                    Configuration.Global.ScopeLabel);
+            string optionalMatchScopeClaimString = string.Format("(s)-[:{0}]->(sc:{1})",
+                                                    Configuration.Global.HasClaimRelName,
+                                                    Configuration.Global.ScopeClaimLabel);
 
-            // TODO: Optional match on scope claim?
 			var query = DB.Cypher
-							.Match("(s:Scope)")
-                            .OptionalMatch("(s)-[:HAS_CLAIM]->(sc:ScopeClaim)")
+							.Match(matchScopeString)
+                            .OptionalMatch(optionalMatchScopeClaimString)
 							.Return((s, sc) => new
 							 {
 								 Scope = s.As<Models.Scope>(),
@@ -98,8 +102,11 @@ namespace Edgecastle.IdentityServer3.Neo4j
         {
             try
             {
+                string createString = string.Format("(s:{0} {{newScope}})",
+                                            Configuration.Global.ScopeLabel);
+
                 await DB.Cypher
-                        .Create("(s:Scope {newScope})")
+                        .Create(createString)
                         .WithParam("newScope", scope)
                         .ExecuteWithoutResultsAsync();
             }
@@ -121,9 +128,16 @@ namespace Edgecastle.IdentityServer3.Neo4j
         {
             try
             {
+                string matchScopeString = string.Format("(s:{0} {{Name:{{scopeName}} })",
+                                                Configuration.Global.ScopeLabel);
+
+                string createUniqueString = string.Format("(s)-[:{0}]->(sc:{1} {{claim}})",
+                                                Configuration.Global.HasClaimRelName,
+                                                Configuration.Global.ScopeClaimLabel);
+
                 var results = await DB.Cypher
-                                .Match("(s:Scope { Name: {scopeName} })")
-                                .CreateUnique("(s)-[:HAS_CLAIM]->(sc:ScopeClaim {claim})")
+                                .Match(matchScopeString)
+                                .CreateUnique(createUniqueString)
                                 .WithParams(new
                                 {
                                     scopeName = scopeName,
