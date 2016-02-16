@@ -1,4 +1,4 @@
-# Neo4j Graph database providers for Thinktecture IdentityServer3 #
+# Neo4j Graph database providers for IdentityServer3 #
 
 ## Getting started ##
 Simply add the Edgecastle.IdentityServer3.Neo4j nuget package to your project.
