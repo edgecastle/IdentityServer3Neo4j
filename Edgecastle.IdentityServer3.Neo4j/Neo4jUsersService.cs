@@ -124,17 +124,21 @@ namespace Edgecastle.IdentityServer3.Neo4j
 					Id = Guid.NewGuid(),
 					Provider = context.ExternalIdentity.Provider,
 					ProviderId = context.ExternalIdentity.ProviderId,
-					Username = displayName,
-					Claims = context.ExternalIdentity.Claims.Select(c => (Models.Claim) c) // Cast
+					Username = displayName
 				};
 
-                string createUniqueString = string.Format("(newUser:{0} {{user}})",
+                // Create the user
+                string createUserString = string.Format("(newUser:{0} {{user}})",
                                                     Configuration.Global.UserLabel);
 
-				DB.Cypher
-					.CreateUnique(createUniqueString)
+				Models.User createdUser = (await DB.Cypher
+					.Create(createUserString)
 					.WithParam("user", user)
-					.ExecuteWithoutResults();
+					.Return(newUser => newUser.As<Models.User>())
+                    .ResultsAsync).Single();
+
+                // Now add claims from the external provider
+                await this.AddClaimsToUser(createdUser.Id, context.ExternalIdentity.Claims.Select(c => (Models.Claim)c));
 			}
 
 			context.AuthenticateResult = new AuthenticateResult(user.Id.ToString(), user.Username);

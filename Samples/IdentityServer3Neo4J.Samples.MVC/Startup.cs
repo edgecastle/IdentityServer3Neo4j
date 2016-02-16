@@ -13,6 +13,7 @@ using System.Web.Helpers;
 using System.IdentityModel.Tokens;
 using System.Collections.Generic;
 using Serilog;
+using Microsoft.Owin.Security.Facebook;
 
 [assembly: OwinStartup(typeof(IdentityServer3Neo4J.Samples.MVC.Startup))]
 
@@ -35,7 +36,13 @@ namespace IdentityServer3Neo4J.Samples.MVC
 					SigningCertificate = LoadCertificate(),
 
 					// Reference the Neo4j version of the services factory
-					Factory = Neo4jServiceFactory.Create()
+					Factory = Neo4jServiceFactory.Create(),
+
+                    // Add external identity providers
+                    AuthenticationOptions = new AuthenticationOptions
+                    {
+                        IdentityProviders = ConfigureIdentityProviders
+                    }
 				});
 			});
 
@@ -57,6 +64,24 @@ namespace IdentityServer3Neo4J.Samples.MVC
 
 			AntiForgeryConfig.UniqueClaimTypeIdentifier = Constants.ClaimTypes.Subject;
 			JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();			
+        }
+
+        /// <summary>
+        /// Configures external identity providers (such as Facebook, Google, Twitter, etc.)
+        /// </summary>
+        /// <param name="app">The OWIN app</param>
+        /// <param name="signInAsType">The sign in type</param>
+        public static void ConfigureIdentityProviders(IAppBuilder app, string signInAsType)
+        {
+            var facebook = new FacebookAuthenticationOptions
+            {
+                AuthenticationType = "Facebook",
+                Caption = "Facebook",
+                SignInAsAuthenticationType = signInAsType,
+                AppId = "...",
+                AppSecret = "..."
+            };
+            app.UseFacebookAuthentication(facebook);
         }
 
 		/// <summary>
