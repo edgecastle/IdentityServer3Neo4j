@@ -194,16 +194,14 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 			}
 		}
 
-		private async Task CreateClientsAsync()
-		{
+        private async Task CreateClientsAsync()
+        {
             IClientAdminService service = new Neo4jClientStore();
             ClientAdminResult result = null;
 
             try
             {
                 Log("Creating MVC Application client scope.");
-
-
 
                 var mvcClient = new Client
                 {
@@ -245,7 +243,7 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
             }
 
             try
-            { 
+            {
                 Log("Creating WebAPI Sample client scope.");
 
                 var webapiClient = new Client
@@ -267,7 +265,7 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
 
                 result = await service.CreateClient(webapiClient);
 
-                if(result.Success)
+                if (result.Success)
                 {
                     Log("Done");
                 }
@@ -275,11 +273,11 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
                 {
                     Log("ERROR: " + result.ErrorMessage, true);
                 }
-			}
-			catch (Exception ex)
-			{
-				LogException(ex);
-			}
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
 
             try
             {
@@ -305,6 +303,44 @@ namespace IdentityServer3Neo4J.Samples.MVC.Controllers
                 };
 
                 result = await service.CreateClient(jsClient);
+
+                if (result.Success)
+                {
+                    Log("Done");
+                }
+                else
+                {
+                    Log("ERROR: " + result.ErrorMessage, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+
+            try
+            {
+                Log("Creating Console Application client scope.");
+
+                var desktopClient = new Client
+                {
+                    Enabled = true,
+                    ClientName = "Console App Sample",
+                    ClientId = "consoleappsample",
+                    Flow = Flows.ResourceOwner,
+                    AccessTokenType = AccessTokenType.Reference,    // More secure when going beyond your own network than a JWT as it gets validated on a back-channel to the ID Service every time it hits a relying party
+                    AllowedScopes = new List<string>
+                    {
+                        "webapi"
+                    },
+                    ClientSecrets = new List<Secret>
+                    {
+                        new Secret("secret".Sha256())
+                    },
+                    RequireConsent = false
+                };
+
+                result = await service.CreateClient(desktopClient);
 
                 if (result.Success)
                 {
