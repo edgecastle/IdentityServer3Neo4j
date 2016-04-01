@@ -166,8 +166,10 @@ namespace Edgecastle.IdentityServer3.Neo4j
                 // Couldn't find user with that username and/or password
                 context.AuthenticateResult = new AuthenticateResult("Authentication failed.");
             }
-
-			context.AuthenticateResult = new AuthenticateResult(authenticationInfo.Id.ToString(), authenticationInfo.Username);
+            else
+            {
+                context.AuthenticateResult = new AuthenticateResult(authenticationInfo.Id.ToString(), authenticationInfo.Username);
+            }
         }
 
         /// <summary>
