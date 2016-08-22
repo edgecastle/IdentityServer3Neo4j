@@ -44,17 +44,19 @@ namespace Edgecastle.IdentityServer3.Neo4j
 
                 if (client.ClientSecrets != null && client.ClientSecrets.Count != 0)
                 {
-                    string createClientString = string.Format("(c:{0} {{newClient}})-[:{1}]->(cs:{2} {{secrets}})",                                                
+                    string createClientString = string.Format("(c:{0} {{newClient}})-[:{1}]->(cs:{2})",                                                
                                                 Configuration.Global.ClientLabel,
                                                 Configuration.Global.HasSecretRelName,
                                                 Configuration.Global.ClientSecretLabel);
 
-                    await DB.Cypher.Create(createClientString)
+                    await DB.Cypher
+                            .Unwind(client.ClientSecrets, "secret")
+                            .Create(createClientString)
                             .WithParams(new
                             {
-                                newClient = newClient,
-                                secrets = client.ClientSecrets
+                                newClient = newClient
                             })
+                            .Set("cs = secret")
                             .ExecuteWithoutResultsAsync();
                 }
                 else

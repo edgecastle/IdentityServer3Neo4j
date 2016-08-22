@@ -128,7 +128,7 @@ namespace Edgecastle.IdentityServer3.Neo4j
         {
             try
             {
-                string matchScopeString = string.Format("(s:{0} {{Name:{{scopeName}} })",
+                string matchScopeString = string.Format("(s:{0} {{Name:{{scopeName}} }})",
                                                 Configuration.Global.ScopeLabel);
 
                 string createUniqueString = string.Format("(s)-[:{0}]->(sc:{1} {{claim}})",
